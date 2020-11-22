@@ -1,8 +1,5 @@
 namespace FSharp.Prelude
 
-open FSharp.Prelude
-open FSharp.Prelude
-
 type AsyncResult<'a, 'b> = Async<Result<'a, 'b>>
 
 module AsyncResult =

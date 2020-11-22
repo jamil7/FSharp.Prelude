@@ -1,7 +1,5 @@
 namespace FSharp.Prelude
 
-open FSharp.Prelude
-
 module Async =
     let singleton (value: 'a): Async<'a> = async.Return(value)
 

@@ -1,7 +1,5 @@
 ﻿namespace FSharp.Prelude
 
-open FSharp.Prelude
-
 module Result =
     let singleton (value: 'a): Result<'a, 'b> = Ok value
 
