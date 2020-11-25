@@ -1,0 +1,24 @@
+name: Publish to nuget
+
+on:
+  release:
+    types: [created, edited]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+      - name: Create the package
+        run: dotnet pack --configuration Release -o Release -p:PackageVersion=${GITHUB_REF/refs\/tags\/v/''} --include-source
+      - name: Publish the package to NuGet
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.PRELUDE_NUGET_AUTH_TOKEN}}
+        run: dotnet nuget push Release/*.nupkg --skip-duplicate --no-symbols true --source https://api.nuget.org/v3/index.json -k ${NUGET_AUTH_TOKEN}

@@ -1,7 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp3.1; net5.0</TargetFrameworks>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <PackageId>FSharp.Prelude</PackageId>
+        <Authors>Jamil Maqdis Anton</Authors>
+        <PackageDescription>Some extensions for F#</PackageDescription>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/jamil7/FSharp.Prelude</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>F#; Async; Result; AsyncResult</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

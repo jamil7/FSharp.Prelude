@@ -29,3 +29,8 @@ Temporary Items
 
 */bin
 */obj
+
+Release/
+site/
+
+mkdocs.yml

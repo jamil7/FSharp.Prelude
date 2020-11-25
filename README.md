@@ -1,2 +1,2 @@
 # FSharp.Prelude
-Some functional extensions to F#
+Some extensions for F#
