@@ -1,5 +1,7 @@
 namespace FSharp.Prelude
 
+open System.Threading.Tasks
+
 module Async =
     let singleton (value: 'a): Async<'a> = async.Return(value)
 
@@ -33,3 +35,31 @@ module Async =
 
     let zip (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> =
         (fun a b -> a, b) <!> asyncOp1 <*> asyncOp2
+
+    /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
+    let awaitTaskWithInnerException (task: Task<'T>): Async<'T> =
+        Async.FromContinuations(fun (success, exception', _cancellationToken) ->
+            task.ContinueWith(fun (t: Task<'T>) ->
+                if t.IsFaulted then
+                    if t.Exception.InnerExceptions.Count = 1
+                    then exception' t.Exception.InnerExceptions.[0]
+                    else exception' t.Exception
+                elif t.IsCanceled then
+                    exception' (TaskCanceledException())
+                else
+                    success t.Result)
+            |> ignore)
+
+    /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
+    let awaitUnitTaskWithInnerException (task: Task): Async<unit> =
+        Async.FromContinuations(fun (success, exception', _cancellationToken) ->
+            task.ContinueWith(fun (t: Task) ->
+                if t.IsFaulted then
+                    if t.Exception.InnerExceptions.Count = 1
+                    then exception' t.Exception.InnerExceptions.[0]
+                    else exception' t.Exception
+                elif t.IsCanceled then
+                    exception' (TaskCanceledException())
+                else
+                    success ())
+            |> ignore)

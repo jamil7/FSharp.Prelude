@@ -56,9 +56,14 @@ module AsyncResult =
         <!> asyncResult1
         <*> asyncResult2
 
+    let ofAsync (asyncOp: Async<'a>): AsyncResult<'a, exn> =
+        asyncOp
+        |> Async.Catch
+        |> Async.map Result.ofChoice
+
     let ofResult (result: 'a): Async<'a> = Async.singleton result
 
-    let fromOption error option = ofResult (Result.ofOption error option)
+    let ofOption error option = ofResult (Result.ofOption error option)
 
     let ofTask (lazyTask: unit -> System.Threading.Tasks.Task<'a>): AsyncResult<'a, exn> =
         async.Delay(lazyTask >> Async.AwaitTask)
