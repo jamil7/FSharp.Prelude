@@ -14,6 +14,7 @@ module AsyncOperators =
             let! asyncOpRes = runAsyncOp
             return f' asyncOpRes
         }
+        
     /// Infix bind operator.
     let (>>=) (f: 'a -> Async<'b>) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f)
 
