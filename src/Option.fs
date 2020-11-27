@@ -27,6 +27,8 @@ module Option =
 
     let apply (f: ('a -> 'b) option) (option: 'a option): 'b option = f <*> option
 
+    let alternative (option1: 'a option) (option2: 'a option): 'a option = option1 <|> option2
+
     let andMap (option: 'a option) (f: ('a -> 'b) option): 'b option = Option.map2 (|>) option f
 
     let andApply (option: 'a option) (f: ('a -> 'b) option): 'b option = f <*> option
