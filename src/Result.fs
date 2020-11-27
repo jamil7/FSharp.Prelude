@@ -2,15 +2,18 @@
 
 [<AutoOpen>]
 module ResultOperators =
+    /// Infix map operator.
     let (<!>) (f: 'a -> 'b) (result: Result<'a, 'c>): Result<'b, 'c> = Result.map f result
 
+    /// Infix apply operator.
     let (<*>) (f: Result<('a -> 'b), 'c>) (result: Result<'a, 'c>): Result<'b, 'c> =
         match f, result with
         | Ok fOk, Ok resOk -> Ok(fOk resOk)
         | Error e, _ -> Error e
         | _, Error e -> Error e
 
-    let (>>=): ('a -> Result<'b, 'c>) -> Result<'a, 'c> -> Result<'b, 'c> = Result.bind
+    /// Infix bind operator.
+    let (>>=) (f: 'a -> Result<'b, 'c>) (result: Result<'a, 'c>): Result<'b, 'c> = Result.bind f result
 
 module Result =
     let singleton (value: 'a): Result<'a, 'b> = Ok value
