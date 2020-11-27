@@ -86,7 +86,7 @@ module ResultCE =
 
         member _.Using(m: 'a :> System.IDisposable, f: 'a -> Result<'a, 'b>) =
             try
-                fun () -> f m
+                (fun () -> f m) ()
             finally
                 (fun () -> if not (obj.ReferenceEquals(m, null)) then m.Dispose()) ()
 
