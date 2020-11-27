@@ -21,6 +21,7 @@ open FSharp.Prelude.Operators
 
 [<RequireQualifiedAccess>]
 module Result =
+    /// Wraps a value in an Ok Result.
     let singleton (value: 'a): Result<'a, 'b> = Ok value
 
     let apply (f: Result<('a -> 'b), 'c>) (result: Result<'a, 'c>): Result<'b, 'c> = f <*> result

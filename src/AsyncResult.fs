@@ -32,6 +32,7 @@ type AsyncResult<'a, 'b> = Async<Result<'a, 'b>>
 
 [<RequireQualifiedAccess>]
 module AsyncResult =
+    /// Wraps a value in an AsyncResult.
     let singleton (value: 'a): AsyncResult<'a, 'b> =
         (Result.singleton >> Async.singleton) value
 

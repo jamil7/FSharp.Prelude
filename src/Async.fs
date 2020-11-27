@@ -25,6 +25,7 @@ open System.Threading.Tasks
 
 [<RequireQualifiedAccess>]
 module Async =
+    /// Wraps a value in an Async.
     let singleton (value: 'a): Async<'a> = async.Return(value)
 
     let map (f: 'a -> 'b) (asyncOp: Async<'a>): Async<'b> = f <!> asyncOp
