@@ -10,7 +10,7 @@ module ResultOperators =
         | Error e, _ -> Error e
         | _, Error e -> Error e
 
-    let (>>=) = Result.bind
+    let (>>=): ('a -> Result<'b, 'c>) -> Result<'a, 'c> -> Result<'b, 'c> = Result.bind
 
 module Result =
     let singleton (value: 'a): Result<'a, 'b> = Ok value
