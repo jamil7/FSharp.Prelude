@@ -1,15 +1,15 @@
-namespace FSharp.Prelude
+namespace FSharp.Prelude.Operators
 
 open FSharp.Prelude
 
-type AsyncResult<'a, 'b> = Async<Result<'a, 'b>>
-
 [<AutoOpen>]
 module AsyncResultOperators =
-    let (<!>) (f: 'a -> 'b) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> =
+    /// Infix map operator.
+    let (<!>) (f: 'a -> 'b) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
         (Result.map >> Async.map) f asyncResult
 
-    let (<*>) (f: AsyncResult<('a -> 'b), 'c>) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> =
+    /// Infix apply operator.
+    let (<*>) (f: Async<Result<('a -> 'b), 'c>>) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
         async {
             let! runF = Async.StartChild f
             let! runAsyncResult = Async.StartChild asyncResult
@@ -18,10 +18,17 @@ module AsyncResultOperators =
             return Result.apply f' result
         }
 
-    let (>>=) (f: 'a -> AsyncResult<'b, 'c>) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> =
+    /// Infix bind operator.
+    let (>>=) (f: 'a -> Async<Result<'b, 'c>>) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
         Async.bind (function
             | Ok ok -> f ok
             | Error error -> Async.singleton (Error error)) asyncResult
+
+namespace FSharp.Prelude
+
+open FSharp.Prelude.Operators
+
+type AsyncResult<'a, 'b> = Async<Result<'a, 'b>>
 
 [<RequireQualifiedAccess>]
 module AsyncResult =

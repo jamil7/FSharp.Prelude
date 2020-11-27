@@ -1,4 +1,4 @@
-﻿namespace FSharp.Prelude
+﻿namespace FSharp.Prelude.Operators
 
 [<AutoOpen>]
 module ResultOperators =
@@ -15,6 +15,11 @@ module ResultOperators =
     /// Infix bind operator.
     let (>>=) (f: 'a -> Result<'b, 'c>) (result: Result<'a, 'c>): Result<'b, 'c> = Result.bind f result
 
+namespace FSharp.Prelude
+
+open FSharp.Prelude.Operators
+
+[<RequireQualifiedAccess>]
 module Result =
     let singleton (value: 'a): Result<'a, 'b> = Ok value
 
