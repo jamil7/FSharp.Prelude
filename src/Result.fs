@@ -17,8 +17,6 @@ module Result =
 
     let apply (f: Result<('a -> 'b), 'c>) (result: Result<'a, 'c>): Result<'b, 'c> = f <*> result
 
-    let andMap (result: Result<'a, 'b>) (f: Result<('a -> 'c), 'b>): Result<'c, 'b> = apply f result
-
     let bindError (f: 'a -> 'b) (result: Result<'c, 'a>): Result<'c, 'b> =
         match result with
         | Ok ok -> Ok ok
@@ -26,6 +24,10 @@ module Result =
 
     let map2 (f: 'a -> 'b -> 'c) (result1: Result<'a, 'd>) (result2: Result<'b, 'd>): Result<'c, 'd> =
         f <!> result1 <*> result2
+
+    let andMap (result: Result<'a, 'b>) (f: Result<('a -> 'c), 'b>): Result<'c, 'b> = map2 (|>) result f
+
+    let andApply (result: Result<'a, 'b>) (f: Result<('a -> 'c), 'b>): Result<'c, 'b> = f <*> result
 
     let sequence (results: Result<'a, 'b> list): Result<'a list, 'b> =
         List.foldr (fun head tail -> List.cons <!> head <*> tail) (singleton []) results

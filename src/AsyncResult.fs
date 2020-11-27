@@ -1,5 +1,7 @@
 namespace FSharp.Prelude
 
+open FSharp.Prelude
+
 type AsyncResult<'a, 'b> = Async<Result<'a, 'b>>
 
 [<AutoOpen>]
@@ -28,6 +30,9 @@ module AsyncResult =
 
     let map (f: 'a -> 'b) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> = f <!> asyncResult
 
+    let apply (f: AsyncResult<('a -> 'b), 'c>) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> =
+        f <*> asyncResult
+
     let bind (f: 'a -> AsyncResult<'b, 'c>) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> = f >>= asyncResult
 
     let bindError (f: 'a -> AsyncResult<'b, 'c>) (asyncResult: AsyncResult<'b, 'a>): AsyncResult<'b, 'c> =
@@ -35,19 +40,17 @@ module AsyncResult =
             | Ok ok -> singleton ok
             | Error error -> f error) asyncResult
 
-    let apply (f: AsyncResult<('a -> 'b), 'c>) (asyncResult: AsyncResult<'a, 'c>): AsyncResult<'b, 'c> =
-        f <*> asyncResult
-
-    let andMap (asyncResult: AsyncResult<'a, 'b>) (f: AsyncResult<('a -> 'c), 'b>): AsyncResult<'c, 'b> =
-        apply f asyncResult
-
-
-
     let map2 (f: 'a -> 'b -> 'c)
              (asyncResult1: AsyncResult<'a, 'd>)
              (asyncResult2: AsyncResult<'b, 'd>)
              : AsyncResult<'c, 'd> =
         f <!> asyncResult1 <*> asyncResult2
+
+    let andMap (asyncResult: AsyncResult<'a, 'b>) (f: AsyncResult<('a -> 'c), 'b>): AsyncResult<'c, 'b> =
+        map2 (|>) asyncResult f
+
+    let andApply (asyncResult: AsyncResult<'a, 'b>) (f: AsyncResult<('a -> 'c), 'b>): AsyncResult<'c, 'b> =
+        f <*> asyncResult
 
     let sequence asyncResults =
         List.foldr (fun asyncResult1 asyncResult2 -> List.cons <!> asyncResult1 <*> asyncResult2) (singleton [])
