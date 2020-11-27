@@ -107,7 +107,7 @@ module AsyncResultCE =
 
         member _.TryWith(m: AsyncResult<'a, 'b>, f: exn -> AsyncResult<'a, 'b>) = async.TryWith(m, f)
 
-        member _.TryFinally(m: AsyncResult<'a, 'b>, f: unit -> unit) = async.TryFinally(m, f)
+        member _.TryFinally(m: AsyncResult<_, _>, f: unit -> unit) = async.TryFinally(m, f)
 
         member _.Using(m: 'a :> System.IDisposable, f: 'a -> AsyncResult<'a, 'b>) = async.Using(m, f)
 
