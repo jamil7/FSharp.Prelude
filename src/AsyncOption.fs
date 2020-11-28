@@ -53,8 +53,10 @@ module AsyncOption =
     let andMap (asyncOption: AsyncOption<'a>) (f: AsyncOption<'a -> 'b>): AsyncOption<'b> = map2 (|>) asyncOption f
 
     let sequence (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> =
-        List.foldr (fun asyncOption1 asyncOption2 -> List.cons <!> asyncOption1 <*> asyncOption2) (singleton [])
-            asyncOptions
+        List.foldBack (fun asyncOption1 asyncOption2 ->
+            (fun head tail -> head :: tail)
+            <!> asyncOption1
+            <*> asyncOption2) asyncOptions (singleton [])
 
     let zip (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) =
         (fun a b -> a, b)

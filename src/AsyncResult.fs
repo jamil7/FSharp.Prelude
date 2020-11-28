@@ -59,8 +59,10 @@ module AsyncResult =
         map2 (|>) asyncResult f
 
     let sequence (asyncResults: AsyncResult<'a, 'b> list): AsyncResult<'a list, 'b> =
-        List.foldr (fun asyncResult1 asyncResult2 -> List.cons <!> asyncResult1 <*> asyncResult2) (singleton [])
-            asyncResults
+        List.foldBack (fun asyncResult1 asyncResult2 ->
+            (fun head tail -> head :: tail)
+            <!> asyncResult1
+            <*> asyncResult2) asyncResults (singleton [])
 
     let zip (asyncResult1: AsyncResult<'a, 'b>) (asyncResult2: AsyncResult<'c, 'b>): AsyncResult<('a * 'c), 'b> =
         (fun a b -> a, b)

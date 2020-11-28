@@ -14,7 +14,7 @@ module AsyncOperators =
             let! asyncOpRes = runAsyncOp
             return f' asyncOpRes
         }
-        
+
     /// Infix bind operator.
     let inline (>>=) (f: 'a -> Async<'b>) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f)
 
@@ -39,7 +39,10 @@ module Async =
     let andMap (asyncOp: Async<'a>) (f: Async<('a -> 'b)>): Async<'b> = map2 (|>) asyncOp f
 
     let sequence (asyncOps: Async<'a> list): Async<'a list> =
-        List.foldr (fun asyncOp1 asyncOp2 -> List.cons <!> asyncOp1 <*> asyncOp2) (singleton []) asyncOps
+        List.foldBack (fun asyncOp1 asyncOp2 ->
+            (fun head tail -> head :: tail)
+            <!> asyncOp1
+            <*> asyncOp2) asyncOps (singleton [])
 
     let zip (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> =
         (fun a b -> a, b) <!> asyncOp1 <*> asyncOp2

@@ -39,7 +39,7 @@ module Result =
     let andApply (result: Result<'a, 'b>) (f: Result<('a -> 'c), 'b>): Result<'c, 'b> = f <*> result
 
     let sequence (results: Result<'a, 'b> list): Result<'a list, 'b> =
-        List.foldr (fun head tail -> List.cons <!> head <*> tail) (singleton []) results
+        List.foldBack (fun head tail -> (fun head tail -> head :: tail) <!> head <*> tail) results (singleton [])
 
     let zip (result1: Result<'a, 'b>) (result2: Result<'c, 'b>): Result<('a * 'c), 'b> =
         (fun a b -> a, b) <!> result1 <*> result2
