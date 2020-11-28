@@ -34,7 +34,7 @@ module Option =
     let sequence (options: 'a option list): 'a list option =
         List.foldr (fun head tail -> List.cons <!> head <*> tail) (singleton []) options
 
-    let zip option1 option2 =
+    let zip (option1: 'a option) (option2: 'b option): ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2
 
     let ofResult (result: Result<'a, 'b>): 'a option =
