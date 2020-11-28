@@ -2,16 +2,20 @@ namespace FSharp.Prelude.Operators.Option
 
 [<AutoOpen>]
 module OptionOperators =
+    /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (option: 'a option): 'b option = Option.map f option
 
+    /// Infix apply operator.
     let inline (<*>) (f: ('a -> 'b) option) (option: 'a option): 'b option =
         match f, option with
         | Some f', Some something -> Some(f' something)
         | None, _ -> None
         | _, None -> None
-
+        
+    /// Infix bind operator.
     let inline (>>=) (f: 'a -> 'b option) (option: 'a option): 'b option = Option.bind f option
 
+    /// Infix alternative operator.
     let inline (<|>) (option1: 'a option) (option2: 'a option): 'a option =
         match option1, option2 with
         | None, right -> right
