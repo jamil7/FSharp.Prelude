@@ -1,12 +1,12 @@
-namespace FSharp.Prelude.Operators
+namespace FSharp.Prelude.Operators.Async
 
 [<AutoOpen>]
 module AsyncOperators =
     /// Infix map operator.
-    let (<!>) (f: 'a -> 'b) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f >> async.Return)
+    let inline (<!>) (f: 'a -> 'b) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f >> async.Return)
 
     /// Infix apply operator.
-    let (<*>) (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> =
+    let inline (<*>) (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> =
         async {
             let! runF = Async.StartChild f
             let! runAsyncOp = Async.StartChild asyncOp
@@ -16,11 +16,11 @@ module AsyncOperators =
         }
         
     /// Infix bind operator.
-    let (>>=) (f: 'a -> Async<'b>) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f)
+    let inline (>>=) (f: 'a -> Async<'b>) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f)
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude.Operators
+open FSharp.Prelude.Operators.Async
 open System.Threading.Tasks
 
 [<RequireQualifiedAccess>]

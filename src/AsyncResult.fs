@@ -1,15 +1,15 @@
-namespace FSharp.Prelude.Operators
+namespace FSharp.Prelude.Operators.AsyncResult
 
 open FSharp.Prelude
 
 [<AutoOpen>]
 module AsyncResultOperators =
     /// Infix map operator.
-    let (<!>) (f: 'a -> 'b) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
+    let inline (<!>) (f: 'a -> 'b) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
         (Result.map >> Async.map) f asyncResult
 
     /// Infix apply operator.
-    let (<*>) (f: Async<Result<('a -> 'b), 'c>>) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
+    let inline (<*>) (f: Async<Result<('a -> 'b), 'c>>) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
         async {
             let! runF = Async.StartChild f
             let! runAsyncResult = Async.StartChild asyncResult
@@ -19,14 +19,15 @@ module AsyncResultOperators =
         }
 
     /// Infix bind operator.
-    let (>>=) (f: 'a -> Async<Result<'b, 'c>>) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
+    let inline (>>=) (f: 'a -> Async<Result<'b, 'c>>) (asyncResult: Async<Result<'a, 'c>>): Async<Result<'b, 'c>> =
         Async.bind (function
             | Ok ok -> f ok
             | Error error -> Async.singleton (Error error)) asyncResult
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude.Operators
+open FSharp.Prelude.Operators.AsyncResult
+open System.Threading.Tasks
 
 type AsyncResult<'a, 'b> = Async<Result<'a, 'b>>
 
@@ -57,7 +58,7 @@ module AsyncResult =
     let andMap (asyncResult: AsyncResult<'a, 'b>) (f: AsyncResult<('a -> 'c), 'b>): AsyncResult<'c, 'b> =
         map2 (|>) asyncResult f
 
-    let sequence asyncResults =
+    let sequence (asyncResults: AsyncResult<'a, 'b> list): AsyncResult<'a list, 'b> =
         List.foldr (fun asyncResult1 asyncResult2 -> List.cons <!> asyncResult1 <*> asyncResult2) (singleton [])
             asyncResults
 
@@ -71,16 +72,17 @@ module AsyncResult =
         |> Async.Catch
         |> Async.map Result.ofChoice
 
+    let ofOption error option =
+        Async.singleton (Result.ofOption error option)
+
     let ofResult (result: 'a): Async<'a> = Async.singleton result
 
-    let ofOption error option = ofResult (Result.ofOption error option)
-
-    let ofTask (lazyTask: unit -> System.Threading.Tasks.Task<'a>): AsyncResult<'a, exn> =
+    let ofTask (lazyTask: unit -> Task<'a>): AsyncResult<'a, exn> =
         async.Delay(lazyTask >> Async.AwaitTask)
         |> Async.Catch
         |> Async.map Result.ofChoice
 
-    let ofUnitTask (lazyUnitTask: unit -> System.Threading.Tasks.Task): AsyncResult<unit, exn> =
+    let ofUnitTask (lazyUnitTask: unit -> Task): AsyncResult<unit, exn> =
         async.Delay(lazyUnitTask >> Async.AwaitTask)
         |> Async.Catch
         |> Async.map Result.ofChoice

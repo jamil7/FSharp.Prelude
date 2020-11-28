@@ -1,23 +1,23 @@
-﻿namespace FSharp.Prelude.Operators
+﻿namespace FSharp.Prelude.Operators.Result
 
 [<AutoOpen>]
 module ResultOperators =
     /// Infix map operator.
-    let (<!>) (f: 'a -> 'b) (result: Result<'a, 'c>): Result<'b, 'c> = Result.map f result
+    let inline (<!>) (f: 'a -> 'b) (result: Result<'a, 'c>): Result<'b, 'c> = Result.map f result
 
     /// Infix apply operator.
-    let (<*>) (f: Result<('a -> 'b), 'c>) (result: Result<'a, 'c>): Result<'b, 'c> =
+    let inline (<*>) (f: Result<('a -> 'b), 'c>) (result: Result<'a, 'c>): Result<'b, 'c> =
         match f, result with
         | Ok fOk, Ok resOk -> Ok(fOk resOk)
         | Error e, _ -> Error e
         | _, Error e -> Error e
 
     /// Infix bind operator.
-    let (>>=) (f: 'a -> Result<'b, 'c>) (result: Result<'a, 'c>): Result<'b, 'c> = Result.bind f result
+    let inline (>>=) (f: 'a -> Result<'b, 'c>) (result: Result<'a, 'c>): Result<'b, 'c> = Result.bind f result
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude.Operators
+open FSharp.Prelude.Operators.Result
 
 [<RequireQualifiedAccess>]
 module Result =

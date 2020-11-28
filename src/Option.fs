@@ -1,25 +1,25 @@
-namespace FSharp.Prelude.Operators
+namespace FSharp.Prelude.Operators.Option
 
 [<AutoOpen>]
 module OptionOperators =
-    let (<!>) (f: 'a -> 'b) (option: 'a option): 'b option = Option.map f option
+    let inline (<!>) (f: 'a -> 'b) (option: 'a option): 'b option = Option.map f option
 
-    let (<*>) (f: ('a -> 'b) option) (option: 'a option): 'b option =
+    let inline (<*>) (f: ('a -> 'b) option) (option: 'a option): 'b option =
         match f, option with
         | Some f', Some something -> Some(f' something)
         | None, _ -> None
         | _, None -> None
 
-    let (>>=) (f: 'a -> 'b option) (option: 'a option): 'b option = Option.bind f option
+    let inline (>>=) (f: 'a -> 'b option) (option: 'a option): 'b option = Option.bind f option
 
-    let (<|>) (option1: 'a option) (option2: 'a option): 'a option =
+    let inline (<|>) (option1: 'a option) (option2: 'a option): 'a option =
         match option1, option2 with
         | None, right -> right
         | left, _ -> left
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude.Operators
+open FSharp.Prelude.Operators.Option
 
 [<RequireQualifiedAccess>]
 module Option =
