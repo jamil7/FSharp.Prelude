@@ -57,9 +57,6 @@ module AsyncResult =
     let andMap (asyncResult: AsyncResult<'a, 'b>) (f: AsyncResult<('a -> 'c), 'b>): AsyncResult<'c, 'b> =
         map2 (|>) asyncResult f
 
-    let andApply (asyncResult: AsyncResult<'a, 'b>) (f: AsyncResult<('a -> 'c), 'b>): AsyncResult<'c, 'b> =
-        f <*> asyncResult
-
     let sequence asyncResults =
         List.foldr (fun asyncResult1 asyncResult2 -> List.cons <!> asyncResult1 <*> asyncResult2) (singleton [])
             asyncResults

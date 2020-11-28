@@ -31,8 +31,6 @@ module Option =
 
     let andMap (option: 'a option) (f: ('a -> 'b) option): 'b option = Option.map2 (|>) option f
 
-    let andApply (option: 'a option) (f: ('a -> 'b) option): 'b option = f <*> option
-
     let sequence (options: 'a option list): 'a list option =
         List.foldr (fun head tail -> List.cons <!> head <*> tail) (singleton []) options
 

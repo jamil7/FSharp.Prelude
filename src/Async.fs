@@ -38,8 +38,6 @@ module Async =
 
     let andMap (asyncOp: Async<'a>) (f: Async<('a -> 'b)>): Async<'b> = map2 (|>) asyncOp f
 
-    let andApply (asyncOp: Async<'a>) (f: Async<('a -> 'b)>): Async<'b> = f <*> asyncOp
-
     let sequence (asyncOps: Async<'a> list): Async<'a list> =
         List.foldr (fun asyncOp1 asyncOp2 -> List.cons <!> asyncOp1 <*> asyncOp2) (singleton []) asyncOps
 
