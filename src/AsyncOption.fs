@@ -1,6 +1,7 @@
 namespace FSharp.Prelude.Operators.AsyncOption
 
 open FSharp.Prelude
+open FSharp.Prelude
 
 [<AutoOpen>]
 module AsyncOptionOperators =
@@ -21,10 +22,9 @@ module AsyncOptionOperators =
             | Some something -> f something
             | None -> Async.singleton None) asyncOption
 
-//    let (<|>) (asyncOption1: Async<Option<'a>>) (asyncOption2: Async<Option<'a>>): Async<Option<'a>> =
-//        Option.alternative
-//        <!> asyncOption1
-//        <*> asyncOption2
+    let (<|>) (asyncOption1: Async<Option<'a>>) (asyncOption2: Async<Option<'a>>): Async<Option<'a>> =
+        Async.map2 Option.alternative asyncOption1 asyncOption2
+
 
 namespace FSharp.Prelude
 
@@ -44,8 +44,8 @@ module AsyncOption =
 
     let bind (f: 'a -> AsyncOption<'b>) (asyncOption: AsyncOption<'a>): AsyncOption<'b> = f >>= asyncOption
 
-    //    let alternative (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'a>): AsyncOption<'a> =
-//        asyncOption1 <|> asyncOption2
+    let alternative (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'a>): AsyncOption<'a> =
+        asyncOption1 <|> asyncOption2
 
     let map2 (f: 'a -> 'b -> 'c) (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>): AsyncOption<'c> =
         f <!> asyncOption1 <*> asyncOption2
