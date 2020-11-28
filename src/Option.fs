@@ -17,13 +17,14 @@ module OptionOperators =
         | None, right -> right
         | left, _ -> left
 
+
 namespace FSharp.Prelude
 
 open FSharp.Prelude.Operators.Option
 
 [<RequireQualifiedAccess>]
 module Option =
-    let singleton value = Some value
+    let singleton (value: 'a): 'a option = Some value
 
     let apply (f: ('a -> 'b) option) (option: 'a option): 'b option = f <*> option
 
@@ -50,37 +51,37 @@ module Option =
 [<AutoOpen>]
 module OptionCE =
     type OptionBuilder() =
-        member _.Return(x) = Option.singleton x
+        member _.Return(value): 'a option = Option.singleton value
 
-        member _.ReturnFrom(m: 'a option) = m
+        member _.ReturnFrom(option: 'a option): 'a option = option
 
-        member _.Zero() = Option.singleton ()
+        member _.Zero(): unit option = Option.singleton ()
 
-        member _.Bind(m, f) = f >>= m
+        member _.Bind(option: 'a option, f: 'a -> 'b option): 'b option = f >>= option
 
-        member _.Delay(f: unit -> 'a option) = f
+        member _.Delay(f: unit -> 'a option): unit -> 'a option = f
 
-        member _.Run(f: unit -> 'a option) = f ()
+        member _.Run(f: unit -> 'a option): 'a option = f ()
 
-        member _.Combine(m: 'a option, f: 'a -> 'b option) = f >>= m
+        member _.Combine(option: 'a option, f: 'a -> 'b option): 'b Option = f >>= option
 
-        member _.TryWith(f: unit -> 'a option, g: exn -> 'a option) =
+        member _.TryWith(f: unit -> 'a option, g: exn -> 'a option): 'a option =
             try
                 f ()
-            with e -> g e
+            with exn -> g exn
 
-        member _.TryFinally(f: unit -> 'a option, g: unit -> unit) =
+        member _.TryFinally(f: unit -> 'a option, g: unit -> unit): 'a option =
             try
                 f ()
             finally
                 g ()
 
-        member _.Using(m: 'a :> System.IDisposable, f: 'a -> 'a option) =
+        member _.Using(m: 'a :> System.IDisposable, f: 'a -> 'a option): 'a option =
             try
                 (fun () -> f m) ()
             finally
                 (fun () -> if not (obj.ReferenceEquals(m, null)) then m.Dispose()) ()
 
-        member _.BindReturn(m, f) = f <!> m
+        member _.BindReturn(option: 'a option, f: 'a -> 'b): 'b option = f <!> option
 
-        member _.MergeSources(m1, m2) = Option.zip m1 m2
+        member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
