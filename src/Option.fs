@@ -11,7 +11,7 @@ module OptionOperators =
         | Some f', Some something -> Some(f' something)
         | None, _ -> None
         | _, None -> None
-        
+
     /// Infix bind operator.
     let inline (>>=) (f: 'a -> 'b option) (option: 'a option): 'b option = Option.bind f option
 
@@ -61,13 +61,13 @@ module OptionCE =
 
         member _.Zero(): unit option = Option.singleton ()
 
-        member _.Bind(option: 'a option, f: 'a -> 'b option): 'b option = f >>= option
+        member _.Bind(option: 'a option, f: 'a -> 'b option): 'b option = Option.bind f option
 
         member _.Delay(f: unit -> 'a option): unit -> 'a option = f
 
         member _.Run(f: unit -> 'a option): 'a option = f ()
 
-        member _.Combine(option: 'a option, f: 'a -> 'b option): 'b Option = f >>= option
+        member _.Combine(option: 'a option, f: 'a -> 'b option): 'b Option = Option.bind f option
 
         member _.TryWith(f: unit -> 'a option, g: exn -> 'a option): 'a option =
             try
@@ -86,6 +86,6 @@ module OptionCE =
             finally
                 (fun () -> if not (obj.ReferenceEquals(m, null)) then m.Dispose()) ()
 
-        member _.BindReturn(option: 'a option, f: 'a -> 'b): 'b option = f <!> option
+        member _.BindReturn(option: 'a option, f: 'a -> 'b): 'b option = Option.map f option
 
         member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2

@@ -27,7 +27,6 @@ module AsyncResultOperators =
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude
 open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
@@ -106,7 +105,7 @@ module AsyncResultCE =
             AsyncResult.ofResult (Result.bind f result)
 
         member _.Bind(asyncResult: AsyncResult<'a, 'e>, f: 'a -> AsyncResult<'b, 'e>): AsyncResult<'b, 'e> =
-            f >>= asyncResult
+            AsyncResult.bind f asyncResult
 
         member _.Bind(error: Result<'a, 'e1>, f: 'e1 -> Result<'a, 'e2>): AsyncResult<'a, 'e2> =
             AsyncResult.ofResult (Result.bindError f error)
@@ -118,7 +117,7 @@ module AsyncResultCE =
 
         member _.Combine(unitAsyncResult: AsyncResult<unit, 'e>, asyncResult: AsyncResult<'a, 'e>)
                          : AsyncResult<'a, 'e> =
-            (fun () -> asyncResult) >>= unitAsyncResult
+            AsyncResult.bind (fun () -> asyncResult) unitAsyncResult
 
         member _.TryWith(asyncResult: AsyncResult<'a, 'e>, f: exn -> AsyncResult<'a, 'e>): AsyncResult<'a, 'e> =
             async.TryWith(asyncResult, f)
@@ -129,7 +128,8 @@ module AsyncResultCE =
         member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncResult<'b, 'e>): AsyncResult<'b, 'e> =
             async.Using(disposable, f)
 
-        member _.BindReturn(asyncResult: AsyncResult<'a, 'e>, f: 'a -> 'b): AsyncResult<'b, 'e> = f <!> asyncResult
+        member _.BindReturn(asyncResult: AsyncResult<'a, 'e>, f: 'a -> 'b): AsyncResult<'b, 'e> =
+            AsyncResult.map f asyncResult
 
         member _.MergeSources(asyncResult1: AsyncResult<'a, 'e>, asyncResult2: AsyncResult<'b, 'e>)
                               : AsyncResult<'a * 'b, 'e> =

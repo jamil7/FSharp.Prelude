@@ -93,12 +93,13 @@ module AsyncOptionCE =
         member _.Bind(option: 'a option, f: 'a -> 'b option): AsyncOption<'b> =
             AsyncOption.ofOption (Option.bind f option)
 
-        member _.Bind(asyncOption: AsyncOption<'a>, f: 'a -> AsyncOption<'b>): AsyncOption<'b> = f >>= asyncOption
+        member _.Bind(asyncOption: AsyncOption<'a>, f: 'a -> AsyncOption<'b>): AsyncOption<'b> =
+            AsyncOption.bind f asyncOption
 
         member _.Delay(f: unit -> AsyncOption<'a>): AsyncOption<'a> = async.Delay f
 
         member _.Combine(unitAsyncOption: AsyncOption<unit>, asyncOption: AsyncOption<'a>): AsyncOption<'a> =
-            (fun () -> asyncOption) >>= unitAsyncOption
+            AsyncOption.bind (fun () -> asyncOption) unitAsyncOption
 
         member _.TryWith(asyncOption: AsyncOption<'a>, f: exn -> AsyncOption<'a>): AsyncOption<'a> =
             async.TryWith(asyncOption, f)
@@ -109,7 +110,7 @@ module AsyncOptionCE =
         member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncOption<'a>): AsyncOption<'a> =
             async.Using(disposable, f)
 
-        member _.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b): AsyncOption<'b> = f <!> asyncOption
+        member _.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b): AsyncOption<'b> = AsyncOption.map f asyncOption
 
         member _.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>): AsyncOption<'a * 'b> =
             AsyncOption.zip asyncOption1 asyncOption2
