@@ -1,7 +1,6 @@
 namespace FSharp.Prelude.Operators.AsyncOption
 
 open FSharp.Prelude
-open FSharp.Prelude
 
 [<AutoOpen>]
 module AsyncOptionOperators =
