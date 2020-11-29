@@ -58,7 +58,7 @@ module AsyncOption =
             <!> asyncOption1
             <*> asyncOption2) asyncOptions (singleton [])
 
-    let zip (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) =
+    let zip (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>): Async<('a * 'b) option> =
         (fun a b -> a, b)
         <!> asyncOption1
         <*> asyncOption2

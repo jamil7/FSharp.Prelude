@@ -40,7 +40,7 @@ module Result =
     let sequence (results: Result<'a, 'e> list): Result<'a list, 'e> =
         List.foldBack (fun head tail -> (fun head tail -> head :: tail) <!> head <*> tail) results (singleton [])
 
-    let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>): Result<('a * 'b), 'e> =
+    let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>): Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2
 
     let ofOption (error: 'e) (option: 'a option): Result<'a, 'e> =
