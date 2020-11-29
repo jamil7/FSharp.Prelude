@@ -18,6 +18,7 @@ module AsyncOperators =
     /// Infix bind operator.
     let inline (>>=) (f: 'a -> Async<'b>) (asyncOp: Async<'a>): Async<'b> = async.Bind(asyncOp, f)
 
+
 namespace FSharp.Prelude
 
 open FSharp.Prelude.Operators.Async
