@@ -111,12 +111,6 @@ module AsyncResultCE =
         member _.Bind(asyncResult: AsyncResult<'a, 'e>, f: 'a -> AsyncResult<'b, 'e>): AsyncResult<'b, 'e> =
             AsyncResult.bind f asyncResult
 
-        member _.Bind(error: Result<'a, 'e1>, f: 'e1 -> Result<'a, 'e2>): AsyncResult<'a, 'e2> =
-            AsyncResult.ofResult (Result.bindError f error)
-
-        member _.Bind(error: AsyncResult<'a, 'e1>, f: 'e1 -> AsyncResult<'a, 'e2>): AsyncResult<'a, 'e2> =
-            AsyncResult.bindError f error
-
         member _.Delay(f: unit -> AsyncResult<'a, 'e>): AsyncResult<'a, 'e> = async.Delay f
 
         member _.Combine(unitAsyncResult: AsyncResult<unit, 'e>, asyncResult: AsyncResult<'a, 'e>)

@@ -64,8 +64,6 @@ module ResultCE =
 
         member _.Bind(result: Result<'a, 'e>, f: 'a -> Result<'b, 'e>): Result<'b, 'e> = Result.bind f result
 
-        member _.Bind(error: Result<'a, 'e1>, f: 'e1 -> Result<'a, 'e2>): Result<'a, 'e2> = Result.bindError f error
-
         member _.Delay(f: unit -> Result<'a, 'e>): unit -> Result<'a, 'e> = f
 
         member _.Run(f: unit -> Result<'a, 'e>): Result<'a, 'e> = f ()
