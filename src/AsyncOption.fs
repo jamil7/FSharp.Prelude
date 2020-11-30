@@ -72,12 +72,12 @@ module AsyncOption =
     let ofOption (option: 'a option): AsyncOption<'a> = Async.singleton option
 
     let ofTask (lazyTask: unit -> Task<'a>): AsyncOption<'a> =
-        async.Delay(lazyTask >> Async.AwaitTask)
+        async.Delay(lazyTask >> Async.awaitTaskWithInnerException)
         |> Async.Catch
         |> Async.map Option.ofChoice
 
     let ofUnitTask (lazyTask: unit -> Task): AsyncOption<unit> =
-        async.Delay(lazyTask >> Async.AwaitTask)
+        async.Delay(lazyTask >> Async.awaitUnitTaskWithInnerException)
         |> Async.Catch
         |> Async.map Option.ofChoice
 

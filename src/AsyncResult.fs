@@ -84,12 +84,14 @@ module AsyncResult =
     let ofResult (result: Result<'a, 'e>): AsyncResult<'a, 'e> = Async.singleton result
 
     let ofTask (lazyTask: unit -> Task<'a>): AsyncResult<'a, exn> =
-        async.Delay(lazyTask >> Async.AwaitTask)
+        async.Delay(lazyTask >> Async.awaitTaskWithInnerException)
         |> Async.Catch
         |> Async.map Result.ofChoice
 
     let ofUnitTask (lazyUnitTask: unit -> Task): AsyncResult<unit, exn> =
-        async.Delay(lazyUnitTask >> Async.AwaitTask)
+        async.Delay
+            (lazyUnitTask
+             >> Async.awaitUnitTaskWithInnerException)
         |> Async.Catch
         |> Async.map Result.ofChoice
 
