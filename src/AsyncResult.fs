@@ -27,6 +27,7 @@ module AsyncResultOperators =
 
 namespace FSharp.Prelude
 
+open FSharp.Prelude
 open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
@@ -44,6 +45,9 @@ module AsyncResult =
         f <*> asyncResult
 
     let bind (f: 'a -> AsyncResult<'b, 'e>) (asyncResult: AsyncResult<'a, 'e>): AsyncResult<'b, 'e> = f >>= asyncResult
+
+    let mapError (f: 'e1 -> 'e2) (asyncResult: AsyncResult<'a, 'e1>): AsyncResult<'a, 'e2> =
+        Async.map (Result.mapError f) asyncResult
 
     let bindError (f: 'e1 -> AsyncResult<'a, 'e2>) (asyncResult: AsyncResult<'a, 'e1>): AsyncResult<'a, 'e2> =
         Async.bind (function
