@@ -62,6 +62,11 @@ module AsyncOption =
         <!> asyncOption1
         <*> asyncOption2
 
+    let ofAsync (asyncOp: Async<'a>): AsyncOption<'a> =
+        asyncOp
+        |> Async.Catch
+        |> Async.map Option.ofChoice
+
     let ofResult (result: Result<'a, 'b>): AsyncOption<'a> = Async.singleton (Option.ofResult result)
 
     let ofOption (option: 'a option): AsyncOption<'a> = Async.singleton option
@@ -83,14 +88,9 @@ module AsyncOptionCE =
     type AsyncOptionBuilder() =
         member _.Return(value: 'a): AsyncOption<'a> = AsyncOption.singleton value
 
-        member _.ReturnFrom(option: 'a option): AsyncOption<'a> = AsyncOption.ofOption option
-
         member _.ReturnFrom(asyncOption: AsyncOption<'a>): AsyncOption<'a> = asyncOption
 
         member _.Zero(): AsyncOption<unit> = AsyncOption.singleton ()
-
-        member _.Bind(option: 'a option, f: 'a -> 'b option): AsyncOption<'b> =
-            AsyncOption.ofOption (Option.bind f option)
 
         member _.Bind(asyncOption: AsyncOption<'a>, f: 'a -> AsyncOption<'b>): AsyncOption<'b> =
             AsyncOption.bind f asyncOption
@@ -114,4 +114,18 @@ module AsyncOptionCE =
         member _.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>): AsyncOption<'a * 'b> =
             AsyncOption.zip asyncOption1 asyncOption2
 
+        member inline _.Source(asyncOption: AsyncOption<'a>): AsyncOption<'a> = asyncOption
+
     let asyncOption = AsyncOptionBuilder()
+
+[<AutoOpen>]
+module AsyncOptionCEExtensions =
+    type AsyncOptionBuilder with
+        member inline _.Source(asyncOp: Async<'a>): AsyncOption<'a> = AsyncOption.ofAsync asyncOp
+
+        member inline _.Source(result: Result<'a, 'e>): AsyncOption<'a> = AsyncOption.ofResult result
+
+        member inline _.Source(task: Task<'a>): AsyncOption<'a> = AsyncOption.ofTask (fun () -> task)
+
+        member inline _.Source(unitTask: Task): AsyncOption<unit> =
+            AsyncOption.ofUnitTask (fun () -> unitTask)

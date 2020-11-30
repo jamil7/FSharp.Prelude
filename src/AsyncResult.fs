@@ -27,7 +27,6 @@ module AsyncResultOperators =
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude
 open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
@@ -99,14 +98,9 @@ module AsyncResultCE =
     type AsyncResultBuilder() =
         member _.Return(value: 'a): AsyncResult<'a, 'e> = AsyncResult.singleton value
 
-        member _.ReturnFrom(result: Result<'a, 'e>): AsyncResult<'a, 'e> = AsyncResult.ofResult result
-
         member _.ReturnFrom(asyncResult: AsyncResult<'a, 'e>): AsyncResult<'a, 'e> = asyncResult
 
         member _.Zero() = AsyncResult.singleton ()
-
-        member _.Bind(result: Result<'a, 'e>, f: 'a -> Result<'b, 'e>): AsyncResult<'b, 'e> =
-            AsyncResult.ofResult (Result.bind f result)
 
         member _.Bind(asyncResult: AsyncResult<'a, 'e>, f: 'a -> AsyncResult<'b, 'e>): AsyncResult<'b, 'e> =
             AsyncResult.bind f asyncResult
@@ -133,4 +127,18 @@ module AsyncResultCE =
                               : AsyncResult<'a * 'b, 'e> =
             AsyncResult.zip asyncResult1 asyncResult2
 
+        member inline _.Source(asyncResult: AsyncResult<'a, 'e>): AsyncResult<'a, 'e> = asyncResult
+
     let asyncResult = AsyncResultBuilder()
+
+[<AutoOpen>]
+module AsyncResultCEExtensions =
+    type AsyncResultBuilder with
+        member inline _.Source(asyncOp: Async<'a>): AsyncResult<'a, exn> = AsyncResult.ofAsync asyncOp
+
+        member inline _.Source(result: Result<'a, 'e>): AsyncResult<'a, 'e> = AsyncResult.ofResult result
+
+        member inline _.Source(task: Task<'a>): AsyncResult<'a, exn> = AsyncResult.ofTask (fun () -> task)
+
+        member inline _.Source(unitTask: Task): AsyncResult<unit, exn> =
+            AsyncResult.ofUnitTask (fun () -> unitTask)
