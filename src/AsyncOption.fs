@@ -123,7 +123,7 @@ module AsyncOptionCEExtensions =
     type AsyncOptionBuilder with
         member inline _.Source(asyncOp: Async<'a>): AsyncOption<'a> = AsyncOption.ofAsync asyncOp
 
-        member inline _.Source(result: Result<'a, 'e>): AsyncOption<'a> = AsyncOption.ofResult result
+        member inline _.Source(option: 'a option): AsyncOption<'a> = AsyncOption.ofOption option
 
         member inline _.Source(task: Task<'a>): AsyncOption<'a> = AsyncOption.ofTask (fun () -> task)
 
