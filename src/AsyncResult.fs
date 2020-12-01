@@ -102,7 +102,7 @@ module AsyncResultCE =
 
         member _.ReturnFrom(asyncResult: AsyncResult<'a, 'e>): AsyncResult<'a, 'e> = asyncResult
 
-        member _.Zero() = AsyncResult.singleton ()
+        member _.Zero(): AsyncResult<unit, 'e> = AsyncResult.singleton ()
 
         member _.Bind(asyncResult: AsyncResult<'a, 'e>, f: 'a -> AsyncResult<'b, 'e>): AsyncResult<'b, 'e> =
             AsyncResult.bind f asyncResult
