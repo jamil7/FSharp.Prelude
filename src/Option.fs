@@ -15,6 +15,12 @@ module OptionOperators =
     /// Infix bind operator.
     let inline (>>=) (f: 'a -> 'b option) (option: 'a option): 'b option = Option.bind f option
 
+    let inline (>=>) (f: 'a -> 'b option) (g: 'b -> 'c option): 'a -> 'c option =
+        fun x ->
+            match f x with
+            | Some thing -> g thing
+            | None -> None
+
     /// Infix alternative operator.
     let inline (<|>) (option1: 'a option) (option2: 'a option): 'a option =
         match option1, option2 with
@@ -35,6 +41,8 @@ module Option =
     let alternative (option1: 'a option) (option2: 'a option): 'a option = option1 <|> option2
 
     let andMap (option: 'a option) (f: ('a -> 'b) option): 'b option = Option.map2 (|>) option f
+
+    let compose (f: 'a -> 'b option) (g: 'b -> 'c option): 'a -> 'c option = f >=> g
 
     let sequence (options: 'a option list): 'a list option =
         List.foldBack (fun head tail -> (fun head tail -> head :: tail) <!> head <*> tail) options (singleton [])

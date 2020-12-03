@@ -15,6 +15,12 @@ module ResultOperators =
     /// Infix bind operator.
     let inline (>>=) (f: 'a -> Result<'b, 'e>) (result: Result<'a, 'e>): Result<'b, 'e> = Result.bind f result
 
+    let (>=>) (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>): 'a -> Result<'c, 'e> =
+        fun x ->
+            match f x with
+            | Ok ok -> g ok
+            | Error e -> Error e
+
 
 namespace FSharp.Prelude
 
@@ -36,6 +42,8 @@ module Result =
         f <!> result1 <*> result2
 
     let andMap (result: Result<'a, 'e>) (f: Result<('a -> 'b), 'e>): Result<'b, 'e> = map2 (|>) result f
+
+    let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>): 'a -> Result<'c, 'e> = f >=> g
 
     let sequence (results: Result<'a, 'e> list): Result<'a list, 'e> =
         List.foldBack (fun head tail -> (fun head tail -> head :: tail) <!> head <*> tail) results (singleton [])

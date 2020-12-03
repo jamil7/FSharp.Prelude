@@ -21,7 +21,20 @@ module AsyncOptionOperators =
             | Some something -> f something
             | None -> Async.singleton None) asyncOption
 
-    let (<|>) (asyncOption1: Async<Option<'a>>) (asyncOption2: Async<Option<'a>>): Async<Option<'a>> =
+    let inline (>=>) (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>): 'a -> Async<'c option> =
+        fun x ->
+            async {
+                let! f' = f x
+
+                let! g' =
+                    match f' with
+                    | Some thing -> g thing
+                    | None -> Async.singleton None
+
+                return g'
+            }
+
+    let inline (<|>) (asyncOption1: Async<Option<'a>>) (asyncOption2: Async<Option<'a>>): Async<Option<'a>> =
         Async.map2 Option.alternative asyncOption1 asyncOption2
 
 
@@ -50,6 +63,8 @@ module AsyncOption =
         f <!> asyncOption1 <*> asyncOption2
 
     let andMap (asyncOption: AsyncOption<'a>) (f: AsyncOption<'a -> 'b>): AsyncOption<'b> = map2 (|>) asyncOption f
+
+    let compose (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>): 'a -> Async<'c option> = f >=> g
 
     let sequence (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> =
         List.foldBack (fun asyncOption1 asyncOption2 ->

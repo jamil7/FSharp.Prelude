@@ -24,6 +24,18 @@ module AsyncResultOperators =
             | Ok ok -> f ok
             | Error error -> Async.singleton (Error error)) asyncResult
 
+    let inline (>=>) (f: 'a -> Async<Result<'b, 'e>>) (g: 'b -> Async<Result<'c, 'e>>): 'a -> Async<Result<'c, 'e>> =
+        fun x ->
+            async {
+                let! f' = f x
+
+                let! g' =
+                    match f' with
+                    | Ok ok -> g ok
+                    | Error e -> Async.singleton (Error e)
+
+                return g'
+            }
 
 namespace FSharp.Prelude
 
@@ -61,6 +73,8 @@ module AsyncResult =
 
     let andMap (asyncResult: AsyncResult<'a, 'e>) (f: AsyncResult<('a -> 'b), 'e>): AsyncResult<'b, 'e> =
         map2 (|>) asyncResult f
+
+    let compose (f: 'a -> Async<Result<'b, 'e>>) (g: 'b -> Async<Result<'c, 'e>>): 'a -> Async<Result<'c, 'e>> = f >=> g
 
     let sequence (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> =
         List.foldBack (fun asyncResult1 asyncResult2 ->
