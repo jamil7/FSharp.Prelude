@@ -99,15 +99,13 @@ module AsyncResult =
 
     let ofTask (lazyTask: unit -> Task<'a>): AsyncResult<'a, exn> =
         async.Delay(lazyTask >> Async.awaitTaskWithInnerException)
-        |> Async.Catch
-        |> Async.map Result.ofChoice
+        |> ofAsync
 
     let ofUnitTask (lazyUnitTask: unit -> Task): AsyncResult<unit, exn> =
         async.Delay
             (lazyUnitTask
              >> Async.awaitUnitTaskWithInnerException)
-        |> Async.Catch
-        |> Async.map Result.ofChoice
+        |> ofAsync
 
 [<AutoOpen>]
 module AsyncResultCE =

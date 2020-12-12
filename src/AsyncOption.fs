@@ -88,13 +88,11 @@ module AsyncOption =
 
     let ofTask (lazyTask: unit -> Task<'a>): AsyncOption<'a> =
         async.Delay(lazyTask >> Async.awaitTaskWithInnerException)
-        |> Async.Catch
-        |> Async.map Option.ofChoice
+        |> ofAsync
 
     let ofUnitTask (lazyTask: unit -> Task): AsyncOption<unit> =
         async.Delay(lazyTask >> Async.awaitUnitTaskWithInnerException)
-        |> Async.Catch
-        |> Async.map Option.ofChoice
+        |> ofAsync
 
     let ofAsyncResult (asyncResult: AsyncResult<'a, 'b>): AsyncOption<'a> = Async.bind ofResult asyncResult
 
