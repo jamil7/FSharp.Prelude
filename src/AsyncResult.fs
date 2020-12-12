@@ -74,7 +74,7 @@ module AsyncResult =
     let andMap (asyncResult: AsyncResult<'a, 'e>) (f: AsyncResult<('a -> 'b), 'e>): AsyncResult<'b, 'e> =
         map2 (|>) asyncResult f
 
-    let compose (f: 'a -> Async<Result<'b, 'e>>) (g: 'b -> Async<Result<'c, 'e>>): 'a -> Async<Result<'c, 'e>> = f >=> g
+    let compose (f: 'a -> AsyncResult<'b, 'e>) (g: 'b -> AsyncResult<'c, 'e>): 'a -> AsyncResult<'c, 'e> = f >=> g
 
     let sequence (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> =
         List.foldBack (fun asyncResult1 asyncResult2 ->
@@ -92,7 +92,7 @@ module AsyncResult =
         |> Async.Catch
         |> Async.map Result.ofChoice
 
-    let ofOption (error: 'e) (option: 'a option): Async<Result<'a, 'e>> =
+    let ofOption (error: 'e) (option: 'a option): AsyncResult<'a, 'e> =
         Async.singleton (Result.ofOption error option)
 
     let ofResult (result: Result<'a, 'e>): AsyncResult<'a, 'e> = Async.singleton result
