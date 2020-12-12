@@ -9,6 +9,7 @@
         <RepositoryUrl>https://github.com/jamil7/FSharp.Prelude</RepositoryUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>F#; Async; Result; AsyncResult</PackageTags>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,6 +18,7 @@
         <Compile Include="Async.fs" />
         <Compile Include="AsyncResult.fs" />
         <Compile Include="AsyncOption.fs" />
+        <Compile Include="AsyncResultOption.fs" />
     </ItemGroup>
 
     <ItemGroup>
