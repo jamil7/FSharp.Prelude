@@ -114,7 +114,7 @@ module AsyncResultOption =
         |> Async.map Result.ofChoice
         |> ofAsyncResult
 
-    let ofOption (error: 'e) (option: 'a option): AsyncResultOption<'a, 'e> = AsyncResult.singleton option
+    let ofOption (option: 'a option): AsyncResultOption<'a, 'e> = AsyncResult.singleton option
 
     let ofResult (result: Result<'a, 'e>): AsyncResultOption<'a, 'e> = Async.singleton result |> ofAsyncResult
 
@@ -124,3 +124,60 @@ module AsyncResultOption =
     let ofUnitTask (lazyUnitTask: unit -> Task): AsyncResultOption<unit, exn> =
         AsyncResult.ofUnitTask lazyUnitTask
         |> ofAsyncResult
+
+[<AutoOpen>]
+module AsyncResultOptionCE =
+    type AsyncResultOptionBuilder() =
+        member _.Return(value: 'a): AsyncResultOption<'a, 'e> = AsyncResultOption.singleton value
+
+        member _.ReturnFrom(asyncResultOption: AsyncResultOption<'a, 'e>): AsyncResultOption<'a, 'e> = asyncResultOption
+
+        member _.Zero(): AsyncResultOption<unit, 'e> = AsyncResultOption.singleton ()
+
+        member _.Bind(asyncResultOption: AsyncResultOption<'a, 'e>, f: 'a -> AsyncResultOption<'b, 'e>)
+                      : AsyncResultOption<'b, 'e> =
+            AsyncResultOption.bind f asyncResultOption
+
+        member _.Delay(f: unit -> AsyncResultOption<'a, 'e>): AsyncResultOption<'a, 'e> = async.Delay f
+
+        member _.Combine(unitAsyncResultOption: AsyncResultOption<unit, 'e>,
+                         asyncResultOption: AsyncResultOption<'a, 'e>)
+                         : AsyncResultOption<'a, 'e> =
+            AsyncResultOption.bind (fun () -> asyncResultOption) unitAsyncResultOption
+
+        member _.TryWith(asyncResultOption: AsyncResultOption<'a, 'e>, f: exn -> AsyncResultOption<'a, 'e>)
+                         : AsyncResultOption<'a, 'e> =
+            async.TryWith(asyncResultOption, f)
+
+        member _.TryFinally(asyncResultOption: AsyncResultOption<'a, 'e>, f: unit -> unit): AsyncResultOption<'a, 'e> =
+            async.TryFinally(asyncResultOption, f)
+
+        member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncResultOption<'b, 'e>)
+                       : AsyncResultOption<'b, 'e> =
+            async.Using(disposable, f)
+
+        member _.BindReturn(asyncResultOption: AsyncResultOption<'a, 'e>, f: 'a -> 'b): AsyncResultOption<'b, 'e> =
+            AsyncResultOption.map f asyncResultOption
+
+        member _.MergeSources(asyncResultOption1: AsyncResultOption<'a, 'e>,
+                              asyncResultOption2: AsyncResultOption<'b, 'e>)
+                              : AsyncResultOption<'a * 'b, 'e> =
+            AsyncResultOption.zip asyncResultOption1 asyncResultOption2
+
+        member inline _.Source(asyncResultOption: AsyncResultOption<'a, 'e>): AsyncResultOption<'a, 'e> =
+            asyncResultOption
+
+    let asyncResultOption = AsyncResultOptionBuilder()
+
+[<AutoOpen>]
+module AsyncResultOptionCEExtensions =
+    type AsyncResultOptionBuilder with
+        member inline _.Source(asyncOp: Async<'a>): AsyncResultOption<'a, exn> = AsyncResultOption.ofAsync asyncOp
+
+        member inline _.Source(result: Result<'a, 'e>): AsyncResultOption<'a, 'e> = AsyncResultOption.ofResult result
+
+        member inline _.Source(task: Task<'a>): AsyncResultOption<'a, exn> =
+            AsyncResultOption.ofTask (fun () -> task)
+
+        member inline _.Source(unitTask: Task): AsyncResultOption<unit, exn> =
+            AsyncResultOption.ofUnitTask (fun () -> unitTask)
