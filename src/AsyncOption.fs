@@ -34,7 +34,7 @@ module AsyncOptionOperators =
                 return g'
             }
 
-    let inline (<|>) (asyncOption1: Async<Option<'a>>) (asyncOption2: Async<Option<'a>>): Async<Option<'a>> =
+    let inline (<|>) (asyncOption1: Async<'a option>) (asyncOption2: Async<'a option>): Async<'a Option> =
         Async.map2 Option.alternative asyncOption1 asyncOption2
 
 
