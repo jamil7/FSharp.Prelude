@@ -11,6 +11,14 @@ module AsyncResultOperators =
     /// Infix apply operator.
     let inline (<*>) (f: Async<Result<('a -> 'b), 'e>>) (asyncResult: Async<Result<'a, 'e>>): Async<Result<'b, 'e>> =
         async {
+            let! f' = f
+            let! asyncResult' = asyncResult
+            return Result.apply f' asyncResult'
+        }
+
+    /// Infix parallel apply operator.
+    let inline (<&>) (f: Async<Result<('a -> 'b), 'e>>) (asyncResult: Async<Result<'a, 'e>>): Async<Result<'b, 'e>> =
+        async {
             let! runF = Async.StartChild f
             let! runAsyncResult = Async.StartChild asyncResult
             let! f' = runF
@@ -55,6 +63,9 @@ module AsyncResult =
     let apply (f: AsyncResult<('a -> 'b), 'e>) (asyncResult: AsyncResult<'a, 'e>): AsyncResult<'b, 'e> =
         f <*> asyncResult
 
+    let applyParallel (f: AsyncResult<('a -> 'b), 'e>) (asyncResult: AsyncResult<'a, 'e>): AsyncResult<'b, 'e> =
+        f <&> asyncResult
+
     let bind (f: 'a -> AsyncResult<'b, 'e>) (asyncResult: AsyncResult<'a, 'e>): AsyncResult<'b, 'e> = f >>= asyncResult
 
     let mapError (f: 'e1 -> 'e2) (asyncResult: AsyncResult<'a, 'e1>): AsyncResult<'a, 'e2> =
@@ -76,16 +87,25 @@ module AsyncResult =
 
     let compose (f: 'a -> AsyncResult<'b, 'e>) (g: 'b -> AsyncResult<'c, 'e>): 'a -> AsyncResult<'c, 'e> = f >=> g
 
-    let sequence (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> =
+    let private sequencer f (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> =
         List.foldBack (fun asyncResult1 asyncResult2 ->
-            (fun head tail -> head :: tail)
-            <!> asyncResult1
-            <*> asyncResult2) asyncResults (singleton [])
+            (fun head tail -> head :: tail) <!> asyncResult1
+            |> f
+            <| asyncResult2) asyncResults (singleton [])
+
+    let sequence (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> = sequencer (<*>) asyncResults
+
+    let parallel' (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> = sequencer (<&>) asyncResults
+
+    let private zipper f (asyncResult1: AsyncResult<'a, 'e>) (asyncResult2: AsyncResult<'b, 'e>): AsyncResult<'a * 'b, 'e> =
+        (fun a b -> a, b) <!> asyncResult1 |> f
+        <| asyncResult2
 
     let zip (asyncResult1: AsyncResult<'a, 'e>) (asyncResult2: AsyncResult<'b, 'e>): AsyncResult<'a * 'b, 'e> =
-        (fun a b -> a, b)
-        <!> asyncResult1
-        <*> asyncResult2
+        zipper (<*>) asyncResult1 asyncResult2
+
+    let zipParallel (asyncResult1: AsyncResult<'a, 'e>) (asyncResult2: AsyncResult<'b, 'e>): AsyncResult<'a * 'b, 'e> =
+        zipper (<&>) asyncResult1 asyncResult2
 
     let ofAsync (asyncOp: Async<'a>): AsyncResult<'a, exn> =
         asyncOp
@@ -139,7 +159,7 @@ module AsyncResultCE =
 
         member _.MergeSources(asyncResult1: AsyncResult<'a, 'e>, asyncResult2: AsyncResult<'b, 'e>)
                               : AsyncResult<'a * 'b, 'e> =
-            AsyncResult.zip asyncResult1 asyncResult2
+            AsyncResult.zipParallel asyncResult1 asyncResult2
 
         member inline _.Source(asyncResult: AsyncResult<'a, 'e>): AsyncResult<'a, 'e> = asyncResult
 

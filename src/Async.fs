@@ -8,6 +8,14 @@ module AsyncOperators =
     /// Infix apply operator.
     let inline (<*>) (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> =
         async {
+            let! f' = f
+            let! asyncOp' = asyncOp
+            return f' asyncOp'
+        }
+
+    /// Infix parallel apply operator.
+    let inline (<&>) (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> =
+        async {
             let! runF = Async.StartChild f
             let! runAsyncOp = Async.StartChild asyncOp
             let! f' = runF
@@ -33,20 +41,29 @@ module Async =
 
     let apply (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> = f <*> asyncOp
 
+    let applyParallel (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> = f <&> asyncOp
+
     let bind (f: 'a -> Async<'b>) (asyncOp: Async<'a>): Async<'b> = f >>= asyncOp
 
     let map2 (f: 'a -> 'b -> 'c) (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'c> = f <!> asyncOp1 <*> asyncOp2
 
     let andMap (asyncOp: Async<'a>) (f: Async<('a -> 'b)>): Async<'b> = map2 (|>) asyncOp f
 
-    let sequence (asyncOps: Async<'a> list): Async<'a list> =
+    let private sequencer f (asyncOps: Async<'a> list): Async<'a list> =
         List.foldBack (fun asyncOp1 asyncOp2 ->
-            (fun head tail -> head :: tail)
-            <!> asyncOp1
-            <*> asyncOp2) asyncOps (singleton [])
+            (fun head tail -> head :: tail) <!> asyncOp1 |> f
+            <| asyncOp2) asyncOps (singleton [])
 
-    let zip (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> =
-        (fun a b -> a, b) <!> asyncOp1 <*> asyncOp2
+    let sequence (asyncOps: Async<'a> list): Async<'a list> = sequencer (<*>) asyncOps
+
+    let parallel' (asyncOps: Async<'a> list): Async<'a list> = sequencer (<&>) asyncOps
+
+    let private zipper f (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> =
+        (fun a b -> a, b) <!> asyncOp1 |> f <| asyncOp2
+
+    let zip (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> = zipper (<*>) asyncOp1 asyncOp2
+
+    let zipParallel (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> = zipper (<&>) asyncOp1 asyncOp2
 
     /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
     let awaitTaskWithInnerException (task: Task<'T>): Async<'T> =

@@ -9,6 +9,13 @@ module AsyncOptionOperators =
 
     let inline (<*>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>): Async<'b option> =
         async {
+            let! f' = f
+            let! asyncOption' = asyncOption
+            return Option.apply f' asyncOption'
+        }
+
+    let inline (<&>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>): Async<'b option> =
+        async {
             let! runF = Async.StartChild f
             let! runAsyncOption = Async.StartChild asyncOption
             let! f' = runF
@@ -54,6 +61,8 @@ module AsyncOption =
 
     let apply (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>): AsyncOption<'b> = f <*> asyncOption
 
+    let applyParallel (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>): AsyncOption<'b> = f <&> asyncOption
+
     let bind (f: 'a -> AsyncOption<'b>) (asyncOption: AsyncOption<'a>): AsyncOption<'b> = f >>= asyncOption
 
     let alternative (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'a>): AsyncOption<'a> =
@@ -66,16 +75,25 @@ module AsyncOption =
 
     let compose (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>): 'a -> Async<'c option> = f >=> g
 
-    let sequence (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> =
+    let private sequencer f (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> =
         List.foldBack (fun asyncOption1 asyncOption2 ->
-            (fun head tail -> head :: tail)
-            <!> asyncOption1
-            <*> asyncOption2) asyncOptions (singleton [])
+            (fun head tail -> head :: tail) <!> asyncOption1
+            |> f
+            <| asyncOption2) asyncOptions (singleton [])
+
+    let sequence (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> = sequencer (<*>) asyncOptions
+
+    let parallel' (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> = sequencer (<&>) asyncOptions
+
+    let private zipper f (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>): Async<('a * 'b) option> =
+        (fun a b -> a, b) <!> asyncOption1 |> f
+        <| asyncOption2
 
     let zip (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>): Async<('a * 'b) option> =
-        (fun a b -> a, b)
-        <!> asyncOption1
-        <*> asyncOption2
+        zipper (<*>) asyncOption1 asyncOption2
+
+    let zipParallel (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>): Async<('a * 'b) option> =
+        zipper (<&>) asyncOption1 asyncOption2
 
     let ofAsync (asyncOp: Async<'a>): AsyncOption<'a> =
         asyncOp
@@ -125,7 +143,7 @@ module AsyncOptionCE =
         member _.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b): AsyncOption<'b> = AsyncOption.map f asyncOption
 
         member _.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>): AsyncOption<'a * 'b> =
-            AsyncOption.zip asyncOption1 asyncOption2
+            AsyncOption.zipParallel asyncOption1 asyncOption2
 
         member inline _.Source(asyncOption: AsyncOption<'a>): AsyncOption<'a> = asyncOption
 

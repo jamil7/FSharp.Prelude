@@ -12,6 +12,15 @@ module AsyncResultOptionOperators =
               : AsyncResult<'b option, 'e> =
         asyncResult {
             let! f' = f
+            let! asyncResultOption' = asyncResultOption
+            return Option.apply f' asyncResultOption'
+        }
+
+    let (<&>) (f: AsyncResult<('a -> 'b) option, 'e>)
+              (asyncResultOption: AsyncResult<'a option, 'e>)
+              : AsyncResult<'b option, 'e> =
+        asyncResult {
+            let! f' = f
             and! asyncResultOption' = asyncResultOption
             return Option.apply f' asyncResultOption'
         }
@@ -62,6 +71,11 @@ module AsyncResultOption =
               : AsyncResultOption<'b, 'e> =
         f <*> asyncResultOption
 
+    let applyParallel (f: AsyncResultOption<('a -> 'b), 'e>)
+                      (asyncResultOption: AsyncResultOption<'a, 'e>)
+                      : AsyncResultOption<'b, 'e> =
+        f <&> asyncResultOption
+
     let bind (f: 'a -> AsyncResultOption<'b, 'e>)
              (asyncResultOption: AsyncResultOption<'a, 'e>)
              : AsyncResultOption<'b, 'e> =
@@ -89,18 +103,34 @@ module AsyncResultOption =
     let compose (f: 'a -> AsyncResultOption<'b, 'e>) (g: 'b -> AsyncResultOption<'c, 'e>): 'a -> AsyncResultOption<'c, 'e> =
         f >=> g
 
-    let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
+    let private sequencer f (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
         List.foldBack (fun asyncResult1 asyncResult2 ->
-            (fun head tail -> head :: tail)
-            <!> asyncResult1
-            <*> asyncResult2) asyncResultOptions (singleton [])
+            (fun head tail -> head :: tail) <!> asyncResult1
+            |> f
+            <| asyncResult2) asyncResultOptions (singleton [])
+
+    let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
+        sequencer (<*>) asyncResultOptions
+
+    let parallel' (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
+        sequencer (<&>) asyncResultOptions
+
+    let private zipper f
+                       (asyncResultOption1: AsyncResultOption<'a, 'e>)
+                       (asyncResultOption2: AsyncResultOption<'b, 'e>)
+                       : AsyncResultOption<'a * 'b, 'e> =
+        (fun a b -> a, b) <!> asyncResultOption1 |> f
+        <| asyncResultOption2
 
     let zip (asyncResultOption1: AsyncResultOption<'a, 'e>)
             (asyncResultOption2: AsyncResultOption<'b, 'e>)
             : AsyncResultOption<'a * 'b, 'e> =
-        (fun a b -> a, b)
-        <!> asyncResultOption1
-        <*> asyncResultOption2
+        zipper (<*>) asyncResultOption1 asyncResultOption2
+
+    let zipParallel (asyncResultOption1: AsyncResultOption<'a, 'e>)
+                    (asyncResultOption2: AsyncResultOption<'b, 'e>)
+                    : AsyncResultOption<'a * 'b, 'e> =
+        zipper (<*>) asyncResultOption1 asyncResultOption2
 
     let ofAsyncResult (asyncRes: AsyncResult<'a, 'b>): AsyncResultOption<'a, 'b> =
         asyncResult {
@@ -162,7 +192,7 @@ module AsyncResultOptionCE =
         member _.MergeSources(asyncResultOption1: AsyncResultOption<'a, 'e>,
                               asyncResultOption2: AsyncResultOption<'b, 'e>)
                               : AsyncResultOption<'a * 'b, 'e> =
-            AsyncResultOption.zip asyncResultOption1 asyncResultOption2
+            AsyncResultOption.zipParallel asyncResultOption1 asyncResultOption2
 
         member inline _.Source(asyncResultOption: AsyncResultOption<'a, 'e>): AsyncResultOption<'a, 'e> =
             asyncResultOption
