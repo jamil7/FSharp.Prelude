@@ -6,8 +6,9 @@ open FSharp.Prelude
 [<Tests>]
 let tests =
   testList "AsyncResult tests" [
+    
     testAsync "Should sequence" {
-       let sample = [1 ; 2; 3; 4 ;5]
+       let sample = [1 ; 2; 3]
        
        let expected = Ok sample
        
