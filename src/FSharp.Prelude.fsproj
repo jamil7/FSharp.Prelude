@@ -19,6 +19,7 @@
         <Compile Include="AsyncResult.fs" />
         <Compile Include="AsyncOption.fs" />
         <Compile Include="AsyncResultOption.fs" />
+        <Compile Include="String.fs" />
     </ItemGroup>
 
     <ItemGroup>
