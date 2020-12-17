@@ -101,3 +101,5 @@ module ResultCE =
 
         member _.MergeSources(result1: Result<'a, 'e>, result2: Result<'b, 'e>): Result<'a * 'b, 'e> =
             Result.zip result1 result2
+
+    let result = ResultBuilder()

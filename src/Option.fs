@@ -97,3 +97,5 @@ module OptionCE =
         member _.BindReturn(option: 'a option, f: 'a -> 'b): 'b option = Option.map f option
 
         member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
+
+    let option = OptionBuilder()
