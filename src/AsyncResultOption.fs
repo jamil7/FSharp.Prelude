@@ -189,6 +189,14 @@ module AsyncResultOptionCE =
         member _.BindReturn(asyncResultOption: AsyncResultOption<'a, 'e>, f: 'a -> 'b): AsyncResultOption<'b, 'e> =
             AsyncResultOption.map f asyncResultOption
 
+        member this.While(f: unit -> bool, asyncResultOption: AsyncResultOption<unit, 'e>)
+                          : AsyncResultOption<unit, 'e> =
+            if not (f ()) then
+                this.Zero()
+            else
+                asyncResultOption
+                |> AsyncResultOption.bind (fun () -> this.While(f, asyncResultOption))
+
         member _.MergeSources(asyncResultOption1: AsyncResultOption<'a, 'e>,
                               asyncResultOption2: AsyncResultOption<'b, 'e>)
                               : AsyncResultOption<'a * 'b, 'e> =

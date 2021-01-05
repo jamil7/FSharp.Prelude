@@ -97,6 +97,11 @@ module ResultCE =
                     if not (obj.ReferenceEquals(disposable, null))
                     then disposable.Dispose()) ()
 
+        member this.While(f: unit -> bool, g: unit -> Result<unit, 'e>): Result<unit, 'e> =
+            if not (f ())
+            then this.Zero()
+            else g () |> Result.bind (fun () -> this.While(f, g))
+
         member _.BindReturn(result: Result<'a, 'e>, f: 'a -> 'b): Result<'b, 'e> = Result.map f result
 
         member _.MergeSources(result1: Result<'a, 'e>, result2: Result<'b, 'e>): Result<'a * 'b, 'e> =

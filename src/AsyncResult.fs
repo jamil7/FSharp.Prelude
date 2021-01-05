@@ -157,6 +157,13 @@ module AsyncResultCE =
         member _.BindReturn(asyncResult: AsyncResult<'a, 'e>, f: 'a -> 'b): AsyncResult<'b, 'e> =
             AsyncResult.map f asyncResult
 
+        member this.While(f: unit -> bool, asyncResult: AsyncResult<unit, 'e>): AsyncResult<unit, 'e> =
+            if not (f ()) then
+                this.Zero()
+            else
+                asyncResult
+                |> AsyncResult.bind (fun () -> this.While(f, asyncResult))
+
         member _.MergeSources(asyncResult1: AsyncResult<'a, 'e>, asyncResult2: AsyncResult<'b, 'e>)
                               : AsyncResult<'a * 'b, 'e> =
             AsyncResult.zipParallel asyncResult1 asyncResult2

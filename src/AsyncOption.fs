@@ -140,6 +140,13 @@ module AsyncOptionCE =
         member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncOption<'a>): AsyncOption<'a> =
             async.Using(disposable, f)
 
+        member this.While(f: unit -> bool, asyncOption: AsyncOption<unit>): AsyncOption<unit> =
+            if not (f ()) then
+                this.Zero()
+            else
+                asyncOption
+                |> AsyncOption.bind (fun () -> this.While(f, asyncOption))
+
         member _.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b): AsyncOption<'b> = AsyncOption.map f asyncOption
 
         member _.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>): AsyncOption<'a * 'b> =

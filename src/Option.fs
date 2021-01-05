@@ -94,6 +94,11 @@ module OptionCE =
             finally
                 (fun () -> if not (obj.ReferenceEquals(m, null)) then m.Dispose()) ()
 
+        member this.While(f: unit -> bool, g: unit -> Option<unit>): Option<unit> =
+            if not (f ())
+            then this.Zero()
+            else g () |> Option.bind (fun () -> this.While(f, g))
+
         member _.BindReturn(option: 'a option, f: 'a -> 'b): 'b option = Option.map f option
 
         member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
