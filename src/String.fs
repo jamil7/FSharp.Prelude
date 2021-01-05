@@ -11,7 +11,7 @@ module String =
     let replace (oldString: string) (newString: string) (source: string) =
         if String.length oldString = 0 then source else source.Replace(oldString, newString)
 
-    let append str1 str2: String = str1 + str2
+    let append str1 str2: string = str1 + str2
 
     let split (separator: string) (str: string) = str.Split(separator) |> List.ofArray
 
