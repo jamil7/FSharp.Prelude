@@ -16,10 +16,10 @@ module AsyncOperators =
     /// Infix parallel apply operator.
     let inline (<&>) (f: Async<('a -> 'b)>) (asyncOp: Async<'a>): Async<'b> =
         async {
-            let! runF = Async.StartChild f
-            let! runAsyncOp = Async.StartChild asyncOp
-            let! f' = runF
-            let! asyncOpRes = runAsyncOp
+            let! runF = Async.StartChildAsTask f
+            let! runAsyncOp = Async.StartChildAsTask asyncOp
+            let! f' = runF |> Async.AwaitTask
+            let! asyncOpRes = runAsyncOp |> Async.AwaitTask
             return f' asyncOpRes
         }
 
@@ -49,14 +49,26 @@ module Async =
 
     let andMap (asyncOp: Async<'a>) (f: Async<('a -> 'b)>): Async<'b> = map2 (|>) asyncOp f
 
-    let private sequencer f (asyncOps: Async<'a> list): Async<'a list> =
-        List.foldBack (fun asyncOp1 asyncOp2 ->
-            (fun head tail -> head :: tail) <!> asyncOp1 |> f
-            <| asyncOp2) asyncOps (singleton [])
+    let private traverser (f: Async<('b list -> 'b list)> -> Async<'b list> -> Async<'b list>)
+                          (g: 'a -> Async<'b>)
+                          (list: 'a list)
+                          : Async<'b list> =
+        List.foldBack (fun head tail ->
+            (fun head' tail' -> head' :: tail') <!> (g head)
+            |> f
+            <| tail) list (singleton [])
 
-    let sequence (asyncOps: Async<'a> list): Async<'a list> = sequencer (<*>) asyncOps
+    let traverse (f: 'a -> Async<'b>) (list: 'a list): Async<'b list> = traverser (<*>) f list
 
-    let parallel' (asyncOps: Async<'a> list): Async<'a list> = sequencer (<&>) asyncOps
+    let traverseParallel (f: 'a -> Async<'b>) (list: 'a list): Async<'b list> = traverser (<&>) f list
+
+    let sequence (asyncOps: Async<'a> list): Async<'a list> = traverse id asyncOps
+
+    let parallel' (asyncOps: Async<'a> list): Async<'a list> =
+        async {
+            let! resArray = Async.Parallel asyncOps
+            return List.ofArray resArray
+        }
 
     let private zipper f (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> =
         (fun a b -> a, b) <!> asyncOp1 |> f <| asyncOp2
@@ -92,3 +104,16 @@ module Async =
                 else
                     success ())
             |> ignore)
+
+[<AutoOpen>]
+module AsyncCEExtensions =
+    type FSharp.Control.AsyncBuilder with
+        member _.Bind(task: Task<'a>, f: 'a -> Async<'b>): Async<'b> =
+            Async.bind f (Async.awaitTaskWithInnerException task)
+
+        member _.Bind(task: Task, f: unit -> Async<unit>): Async<unit> =
+            Async.bind f (Async.awaitUnitTaskWithInnerException task)
+
+        member _.BindReturn(asyncOption: Async<'a>, f: 'a -> 'b): Async<'b> = Async.map f asyncOption
+
+        member _.MergeSources(async1: Async<'a>, async2: Async<'b>): Async<'a * 'b> = Async.zipParallel async1 async2
