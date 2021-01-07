@@ -44,8 +44,13 @@ module Option =
 
     let compose (f: 'a -> 'b option) (g: 'b -> 'c option): 'a -> 'c option = f >=> g
 
+    let traverse (f: 'a -> 'b option) (list: 'a list): 'b list option =
+        List.foldBack (fun head tail ->
+            (fun head' tail' -> head' :: tail') <!> (f head)
+            <*> tail) list (singleton [])
+    
     let sequence (options: 'a option list): 'a list option =
-        List.foldBack (fun head tail -> (fun head tail -> head :: tail) <!> head <*> tail) options (singleton [])
+        traverse id options
 
     let zip (option1: 'a option) (option2: 'b option): ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2
