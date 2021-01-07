@@ -103,17 +103,26 @@ module AsyncResultOption =
     let compose (f: 'a -> AsyncResultOption<'b, 'e>) (g: 'b -> AsyncResultOption<'c, 'e>): 'a -> AsyncResultOption<'c, 'e> =
         f >=> g
 
-    let private sequencer f (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
-        List.foldBack (fun asyncResult1 asyncResult2 ->
-            (fun head tail -> head :: tail) <!> asyncResult1
+    let private traverser (f: AsyncResultOption<('b list -> 'b list), 'e> -> AsyncResultOption<'b list, 'e> -> AsyncResultOption<'b list, 'e>)
+                          (g: 'a -> AsyncResultOption<'b, 'e>)
+                          (list: 'a list)
+                          : AsyncResultOption<'b list, 'e> =
+        List.foldBack (fun head tail ->
+            (fun head' tail' -> head' :: tail') <!> (g head)
             |> f
-            <| asyncResult2) asyncResultOptions (singleton [])
+            <| tail) list (singleton [])
+
+    let traverse (f: 'a -> AsyncResultOption<'b, 'e>) (asyncResult: 'a list): AsyncResultOption<'b list, 'e> =
+        traverser (<*>) f asyncResult
+
+    let traverseParallel (f: 'a -> AsyncResultOption<'b, 'e>) (asyncResult: 'a list): AsyncResultOption<'b list, 'e> =
+        traverser (<&>) f asyncResult
 
     let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
-        sequencer (<*>) asyncResultOptions
+        traverse id asyncResultOptions
 
     let parallel' (asyncResultOptions: AsyncResultOption<'a, 'e> list): AsyncResultOption<'a list, 'e> =
-        sequencer (<&>) asyncResultOptions
+        traverseParallel id asyncResultOptions
 
     let private zipper f
                        (asyncResultOption1: AsyncResultOption<'a, 'e>)
