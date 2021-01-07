@@ -45,8 +45,12 @@ module Result =
 
     let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>): 'a -> Result<'c, 'e> = f >=> g
 
-    let sequence (results: Result<'a, 'e> list): Result<'a list, 'e> =
-        List.foldBack (fun head tail -> (fun head tail -> head :: tail) <!> head <*> tail) results (singleton [])
+    let traverse (f: 'a -> Result<'b, 'e>) (list: 'a list): Result<'b list, 'e> =
+        List.foldBack (fun head tail ->
+            (fun head' tail' -> head' :: tail') <!> (f head)
+            <*> tail) list (singleton [])
+
+    let sequence (results: Result<'a, 'e> list): Result<'a list, 'e> = traverse id results
 
     let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>): Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2
