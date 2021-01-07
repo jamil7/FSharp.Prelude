@@ -4,6 +4,8 @@ open System
 
 [<RequireQualifiedAccess>]
 module String =
+    let contains (str: string) (source: string): bool = source.Contains(str)
+
     let isEmpty (str: string): bool = str = ""
 
     let reverse (str: string): string = String(str.ToCharArray() |> Array.rev)
