@@ -19,11 +19,9 @@ module AsyncResultOperators =
     /// Infix parallel apply operator.
     let inline (<&>) (f: Async<Result<('a -> 'b), 'e>>) (asyncResult: Async<Result<'a, 'e>>): Async<Result<'b, 'e>> =
         async {
-            let! runF = Async.StartChild f
-            let! runAsyncResult = Async.StartChild asyncResult
-            let! f' = runF
-            let! result = runAsyncResult
-            return Result.apply f' result
+            let! f' = f
+            and! asyncResult' = asyncResult
+            return Result.apply f' asyncResult'
         }
 
     /// Infix bind operator.
@@ -47,6 +45,7 @@ module AsyncResultOperators =
 
 namespace FSharp.Prelude
 
+open FSharp.Prelude
 open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
@@ -87,15 +86,28 @@ module AsyncResult =
 
     let compose (f: 'a -> AsyncResult<'b, 'e>) (g: 'b -> AsyncResult<'c, 'e>): 'a -> AsyncResult<'c, 'e> = f >=> g
 
-    let private sequencer f (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> =
-        List.foldBack (fun asyncResult1 asyncResult2 ->
-            (fun head tail -> head :: tail) <!> asyncResult1
+    let private traverser (f: AsyncResult<('b list -> 'b list), 'e> -> AsyncResult<'b list, 'e> -> AsyncResult<'b list, 'e>)
+                          (g: 'a -> AsyncResult<'b, 'e>)
+                          (list: 'a list)
+                          : AsyncResult<'b list, 'e> =
+        List.foldBack (fun head tail ->
+            (fun head' tail' -> head' :: tail') <!> (g head)
             |> f
-            <| asyncResult2) asyncResults (singleton [])
+            <| tail) list (singleton [])
 
-    let sequence (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> = sequencer (<*>) asyncResults
+    let traverse (f: 'a -> AsyncResult<'b, 'e>) (asyncResult: 'a list): AsyncResult<'b list, 'e> =
+        traverser (<*>) f asyncResult
 
-    let parallel' (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> = sequencer (<&>) asyncResults
+    let traverseParallel (f: 'a -> AsyncResult<'b, 'e>) (asyncResult: 'a list): AsyncResult<'b list, 'e> =
+        traverser (<&>) f asyncResult
+
+    let sequence (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> = traverse id asyncResults
+
+    let parallel' (asyncResults: AsyncResult<'a, 'e> list): AsyncResult<'a list, 'e> =
+        async {
+            let! array = Async.Parallel asyncResults
+            return Result.sequence (List.ofArray array)
+        }
 
     let private zipper f (asyncResult1: AsyncResult<'a, 'e>) (asyncResult2: AsyncResult<'b, 'e>): AsyncResult<'a * 'b, 'e> =
         (fun a b -> a, b) <!> asyncResult1 |> f

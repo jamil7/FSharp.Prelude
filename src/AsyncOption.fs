@@ -16,11 +16,9 @@ module AsyncOptionOperators =
 
     let inline (<&>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>): Async<'b option> =
         async {
-            let! runF = Async.StartChild f
-            let! runAsyncOption = Async.StartChild asyncOption
-            let! f' = runF
-            let! option = runAsyncOption
-            return Option.apply f' option
+            let! f' = f
+            and! asyncOption' = asyncOption
+            return Option.apply f' asyncOption'
         }
 
     let inline (>>=) (f: 'a -> Async<'b option>) (asyncOption: Async<'a option>): Async<'b option> =
@@ -75,15 +73,27 @@ module AsyncOption =
 
     let compose (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>): 'a -> Async<'c option> = f >=> g
 
-    let private sequencer f (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> =
-        List.foldBack (fun asyncOption1 asyncOption2 ->
-            (fun head tail -> head :: tail) <!> asyncOption1
+    let private traverser (f: AsyncOption<('b list -> 'b list)> -> AsyncOption<'b list> -> AsyncOption<'b list>)
+                          (g: 'a -> AsyncOption<'b>)
+                          (list: 'a list)
+                          : AsyncOption<'b list> =
+        List.foldBack (fun head tail ->
+            (fun head' tail' -> head' :: tail') <!> (g head)
             |> f
-            <| asyncOption2) asyncOptions (singleton [])
+            <| tail) list (singleton [])
 
-    let sequence (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> = sequencer (<*>) asyncOptions
+    let traverse (f: 'a -> AsyncOption<'b>) (asyncOption: 'a list): AsyncOption<'b list> = traverser (<*>) f asyncOption
 
-    let parallel' (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> = sequencer (<&>) asyncOptions
+    let traverseParallel (f: 'a -> AsyncOption<'b>) (asyncOption: 'a list): AsyncOption<'b list> =
+        traverser (<&>) f asyncOption
+
+    let sequence (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> = traverse id asyncOptions
+
+    let parallel' (asyncOptions: AsyncOption<'a> list): AsyncOption<'a list> =
+        async {
+            let! array = Async.Parallel asyncOptions
+            return Option.sequence (List.ofArray array)
+        }
 
     let private zipper f (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>): Async<('a * 'b) option> =
         (fun a b -> a, b) <!> asyncOption1 |> f
