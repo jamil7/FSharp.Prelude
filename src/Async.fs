@@ -18,8 +18,8 @@ module AsyncOperators =
         async {
             let! runF = Async.StartChildAsTask f
             let! runAsyncOp = Async.StartChildAsTask asyncOp
-            let! f' = runF |> Async.AwaitTask
-            let! asyncOpRes = runAsyncOp |> Async.AwaitTask
+            let! f' = Async.AwaitTask runF
+            let! asyncOpRes = Async.AwaitTask runAsyncOp
             return f' asyncOpRes
         }
 
