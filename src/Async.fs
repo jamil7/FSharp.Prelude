@@ -111,9 +111,9 @@ module AsyncCEExtensions =
         member _.Bind(task: Task<'a>, f: 'a -> Async<'b>): Async<'b> =
             Async.bind f (Async.awaitTaskWithInnerException task)
 
-        member _.Bind(task: Task, f: unit -> Async<unit>): Async<unit> =
-            Async.bind f (Async.awaitUnitTaskWithInnerException task)
+        member _.Bind(unitTask: Task, f: unit -> Async<unit>): Async<unit> =
+            Async.bind f (Async.awaitUnitTaskWithInnerException unitTask)
 
-        member _.BindReturn(asyncOption: Async<'a>, f: 'a -> 'b): Async<'b> = Async.map f asyncOption
+        member _.BindReturn(async: Async<'a>, f: 'a -> 'b): Async<'b> = Async.map f async
 
         member _.MergeSources(async1: Async<'a>, async2: Async<'b>): Async<'a * 'b> = Async.zipParallel async1 async2
