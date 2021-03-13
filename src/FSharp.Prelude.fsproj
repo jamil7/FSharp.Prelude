@@ -10,6 +10,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>F#; Async; Result; Option; AsyncResult; AsyncOption</PackageTags>
         <LangVersion>preview</LangVersion>
+        <OtherFlags>$(OtherFlags) --warnon:1182</OtherFlags>
     </PropertyGroup>
 
     <ItemGroup>
