@@ -34,3 +34,5 @@ module String =
     let trimStart (str: string): string = str.TrimStart()
 
     let trimRight (str: string): string = str.TrimEnd()
+
+    let startsWith (str: string) (source: string): bool = source.StartsWith str
