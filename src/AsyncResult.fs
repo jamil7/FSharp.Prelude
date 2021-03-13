@@ -130,13 +130,13 @@ module AsyncResult =
     let ofResult (result: Result<'a, 'e>): AsyncResult<'a, 'e> = Async.singleton result
 
     let ofTask (lazyTask: unit -> Task<'a>): AsyncResult<'a, exn> =
-        async.Delay(lazyTask >> Async.awaitTaskWithInnerException)
+        async.Delay(lazyTask >> Async.AwaitTaskWithInnerException)
         |> ofAsync
 
     let ofUnitTask (lazyUnitTask: unit -> Task): AsyncResult<unit, exn> =
         async.Delay
             (lazyUnitTask
-             >> Async.awaitUnitTaskWithInnerException)
+             >> Async.AwaitTaskWithInnerException)
         |> ofAsync
 
 [<AutoOpen>]

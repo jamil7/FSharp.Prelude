@@ -115,11 +115,11 @@ module AsyncOption =
     let ofOption (option: 'a option): AsyncOption<'a> = Async.singleton option
 
     let ofTask (lazyTask: unit -> Task<'a>): AsyncOption<'a> =
-        async.Delay(lazyTask >> Async.awaitTaskWithInnerException)
+        async.Delay(lazyTask >> Async.AwaitTaskWithInnerException)
         |> ofAsync
 
     let ofUnitTask (lazyTask: unit -> Task): AsyncOption<unit> =
-        async.Delay(lazyTask >> Async.awaitUnitTaskWithInnerException)
+        async.Delay(lazyTask >> Async.AwaitTaskWithInnerException)
         |> ofAsync
 
     let ofAsyncResult (asyncResult: AsyncResult<'a, 'b>): AsyncOption<'a> = Async.bind ofResult asyncResult

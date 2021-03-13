@@ -77,42 +77,45 @@ module Async =
 
     let zipParallel (asyncOp1: Async<'a>) (asyncOp2: Async<'b>): Async<'a * 'b> = zipper (<&>) asyncOp1 asyncOp2
 
-    /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
-    let awaitTaskWithInnerException (task: Task<'T>): Async<'T> =
-        Async.FromContinuations(fun (success, exception', _cancellationToken) ->
-            task.ContinueWith(fun (t: Task<'T>) ->
-                if t.IsFaulted then
-                    if t.Exception.InnerExceptions.Count = 1
-                    then exception' t.Exception.InnerExceptions.[0]
-                    else exception' t.Exception
-                elif t.IsCanceled then
-                    exception' (TaskCanceledException())
-                else
-                    success t.Result)
-            |> ignore)
+[<AutoOpen>]
+module AsyncExtension =
+    type Async with
+        /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
+        static member AwaitTaskWithInnerException(task: Task<'T>): Async<'T> =
+            Async.FromContinuations(fun (success, exception', _cancellationToken) ->
+                task.ContinueWith(fun (t: Task<'T>) ->
+                    if t.IsFaulted then
+                        if t.Exception.InnerExceptions.Count = 1
+                        then exception' t.Exception.InnerExceptions.[0]
+                        else exception' t.Exception
+                    elif t.IsCanceled then
+                        exception' (TaskCanceledException())
+                    else
+                        success t.Result)
+                |> ignore)
 
-    /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
-    let awaitUnitTaskWithInnerException (task: Task): Async<unit> =
-        Async.FromContinuations(fun (success, exception', _cancellationToken) ->
-            task.ContinueWith(fun (t: Task) ->
-                if t.IsFaulted then
-                    if t.Exception.InnerExceptions.Count = 1
-                    then exception' t.Exception.InnerExceptions.[0]
-                    else exception' t.Exception
-                elif t.IsCanceled then
-                    exception' (TaskCanceledException())
-                else
-                    success ())
-            |> ignore)
+        /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
+        static member AwaitTaskWithInnerException(task: Task): Async<unit> =
+            Async.FromContinuations(fun (success, exception', _cancellationToken) ->
+                task.ContinueWith(fun (t: Task) ->
+                    if t.IsFaulted then
+                        if t.Exception.InnerExceptions.Count = 1
+                        then exception' t.Exception.InnerExceptions.[0]
+                        else exception' t.Exception
+                    elif t.IsCanceled then
+                        exception' (TaskCanceledException())
+                    else
+                        success ())
+                |> ignore)
 
 [<AutoOpen>]
 module AsyncCEExtensions =
     type FSharp.Control.AsyncBuilder with
         member _.Bind(task: Task<'a>, f: 'a -> Async<'b>): Async<'b> =
-            Async.bind f (Async.awaitTaskWithInnerException task)
+            Async.bind f (Async.AwaitTaskWithInnerException task)
 
         member _.Bind(unitTask: Task, f: unit -> Async<unit>): Async<unit> =
-            Async.bind f (Async.awaitUnitTaskWithInnerException unitTask)
+            Async.bind f (Async.AwaitTaskWithInnerException unitTask)
 
         member _.BindReturn(async: Async<'a>, f: 'a -> 'b): Async<'b> = Async.map f async
 
