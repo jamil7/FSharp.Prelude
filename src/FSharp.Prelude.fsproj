@@ -8,7 +8,7 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/jamil7/FSharp.Prelude</RepositoryUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageTags>F#; Async; Result; AsyncResult</PackageTags>
+        <PackageTags>F#; Async; Result; Option; AsyncResult; AsyncOption</PackageTags>
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
 
