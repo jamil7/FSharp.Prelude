@@ -8,7 +8,7 @@ module ResultOperators =
     let inline (<!>) (f: 'a -> 'b) (result: Result<'a, 'e>) : Result<'b, 'e> = Result.map f result
 
     /// Infix apply operator.
-    let inline (<*>) (f: Result<('a -> 'b), 'e>) (result: Result<'a, 'e>) : Result<'b, 'e> =
+    let inline (<*>) (f: Result<'a -> 'b, 'e>) (result: Result<'a, 'e>) : Result<'b, 'e> =
         match f, result with
         | Ok fOk, Ok resOk -> Ok(fOk resOk)
         | Error e, _ -> Error e
@@ -46,13 +46,14 @@ module List =
 
     let sequenceResultA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseResultA id results
 
+
 [<RequireQualifiedAccess>]
 module Result =
 
     /// Wraps a value in an Ok Result.
     let singleton (value: 'a) : Result<'a, 'e> = !>value
 
-    let apply (f: Result<('a -> 'b), 'e>) (result: Result<'a, 'e>) : Result<'b, 'e> = f <*> result
+    let apply (f: Result<'a -> 'b, 'e>) (result: Result<'a, 'e>) : Result<'b, 'e> = f <*> result
 
     let bindError (f: 'e1 -> Result<'a, 'e2>) (result: Result<'a, 'e1>) : Result<'a, 'e2> =
         match result with
@@ -62,7 +63,10 @@ module Result =
     let map2 (f: 'a -> 'b -> 'c) (result1: Result<'a, 'e>) (result2: Result<'b, 'e>) : Result<'c, 'e> =
         f <!> result1 <*> result2
 
-    let andMap (result: Result<'a, 'e>) (f: Result<('a -> 'b), 'e>) : Result<'b, 'e> = map2 (|>) result f
+    let andMap (result: Result<'a, 'e>) (f: Result<'a -> 'b, 'e>) : Result<'b, 'e> = map2 (|>) result f
+
+    let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (result: Result<'a, 'e1>) : Result<'b, 'e2> =
+        (Result.map f >> Result.mapError g) result
 
     let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> = f >=> g
 
@@ -88,6 +92,7 @@ module Result =
         match choice with
         | Choice1Of2 left -> Ok left
         | Choice2Of2 right -> Error right
+
 
 [<AutoOpen>]
 module ResultCE =
