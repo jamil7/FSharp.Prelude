@@ -2,7 +2,6 @@ namespace FSharp.Prelude.Operators.Async
 
 [<AutoOpen>]
 module AsyncOperators =
-    let (!>) (value: 'a) : Async<'a> = async.Return value
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (asyncOp: Async<'a>) : Async<'b> = async.Bind(asyncOp, f >> async.Return)
@@ -32,38 +31,12 @@ module AsyncOperators =
 namespace FSharp.Prelude
 
 [<RequireQualifiedAccess>]
-module List =
-
-    open FSharp.Prelude.Operators.Async
-
-    let traverseAsyncM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' -> tail >>= (fun tail' -> !>(List.cons head' tail'))))
-            asyncOps
-            (!> [])
-
-    let traverseAsyncA (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack (fun head tail -> List.cons <!> f head <*> tail) asyncOps (!> [])
-
-    let traverseAsyncAParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack (fun head tail -> List.cons <!> f head <&> tail) asyncOps (!> [])
-
-    let sequenceAsyncM (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncM id asyncOps
-
-    let sequenceAsyncA (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncA id asyncOps
-
-    let sequenceAsyncAParallel (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncAParallel id asyncOps
-
-
-[<RequireQualifiedAccess>]
 module Async =
 
     open FSharp.Prelude.Operators.Async
 
     /// Wraps a value in an Async.
-    let singleton (value: 'a) : Async<'a> = !>value
+    let singleton (value: 'a) : Async<'a> = async.Return value
 
     let map (f: 'a -> 'b) (asyncOp: Async<'a>) : Async<'b> = f <!> asyncOp
 
@@ -77,7 +50,29 @@ module Async =
 
     let andMap (asyncOp: Async<'a>) (f: Async<'a -> 'b>) : Async<'b> = map2 (|>) asyncOp f
 
-    let sequence (asyncOps: Async<'a> list) : Async<'a list> = List.sequenceAsyncM asyncOps
+    let internal traverseM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        List.foldBack
+            (fun head tail ->
+                f head
+                >>= (fun head' ->
+                    tail
+                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
+            asyncOps
+            (singleton [])
+
+    let internal traverseA (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) asyncOps (singleton [])
+
+    let internal traverseAParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) asyncOps (singleton [])
+
+    let internal sequenceM (asyncOps: Async<'a> list) : Async<'a list> = traverseM id asyncOps
+
+    let internal sequenceA (asyncOps: Async<'a> list) : Async<'a list> = traverseA id asyncOps
+
+    let internal sequenceAParallel (asyncOps: Async<'a> list) : Async<'a list> = traverseAParallel id asyncOps
+
+    let sequence (asyncOps: Async<'a> list) : Async<'a list> = sequenceM asyncOps
 
     let parallel' (asyncOps: Async<'a> list) : Async<'a list> =
         async {
