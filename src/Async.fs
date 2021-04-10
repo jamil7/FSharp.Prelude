@@ -85,9 +85,6 @@ module Async =
             return List.ofArray resArray
         }
 
-    let private zipper f (asyncOp1: Async<'a>) (asyncOp2: Async<'b>) : Async<'a * 'b> =
-        (fun a b -> a, b) <!> asyncOp1 |> f <| asyncOp2
-
     let zip (asyncOp1: Async<'a>) (asyncOp2: Async<'b>) : Async<'a * 'b> =
         (fun a b -> a, b) <!> asyncOp1 <*> asyncOp2
 
