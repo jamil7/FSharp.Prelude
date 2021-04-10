@@ -14,17 +14,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Option.fs"/>
-        <Compile Include="Result.fs"/>
-        <Compile Include="Async.fs"/>
-        <Compile Include="AsyncResult.fs"/>
-        <Compile Include="AsyncOption.fs"/>
-        <Compile Include="AsyncResultOption.fs"/>
-        <Compile Include="String.fs"/>
+        <Compile Include="Option.fs" />
+        <Compile Include="Result.fs" />
+        <Compile Include="AsyncOperators.fs" />
+        <Compile Include="AsyncResultOperators.fs" />
+        <Compile Include="List.fs" />
+        <Compile Include="Async.fs" />
+        <Compile Include="AsyncResult.fs" />
+        <Compile Include="AsyncOption.fs" />
+        <Compile Include="AsyncResultOption.fs" />
+        <Compile Include="String.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="FSharp.Core" Version="5.0.0"/>
+        <PackageReference Update="FSharp.Core" Version="5.0.0" />
     </ItemGroup>
 
 </Project>
