@@ -1,10 +1,72 @@
+namespace FSharp.Prelude.Operators.Async
+
+[<AutoOpen>]
+module AsyncOperators =
+    /// Singleton (return) operator.
+    let (->>) (value: 'a) : Async<'a> = async.Return(value)
+
+    /// Infix map operator.
+    let inline (<!>) (f: 'a -> 'b) (asyncOp: Async<'a>) : Async<'b> = async.Bind(asyncOp, f >> async.Return)
+
+    /// Infix apply operator.
+    let inline (<*>) (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> =
+        async {
+            let! f' = f
+            let! asyncOp' = asyncOp
+            return f' asyncOp'
+        }
+
+    /// Infix parallel apply operator.
+    let inline (<&>) (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> =
+        async {
+            let! runF = Async.StartChildAsTask f
+            let! runAsyncOp = Async.StartChildAsTask asyncOp
+            let! f' = Async.AwaitTask runF
+            let! asyncOpRes = Async.AwaitTask runAsyncOp
+            return f' asyncOpRes
+        }
+
+    /// Infix bind operator.
+    let inline (>>=) (asyncOp: Async<'a>) (f: 'a -> Async<'b>) : Async<'b> = async.Bind(asyncOp, f)
+
+
 namespace FSharp.Prelude
 
-open FSharp.Prelude.Operators.Async
-open System.Threading.Tasks
+[<RequireQualifiedAccess>]
+module List =
+
+    let cons head tail = head :: tail
+
+    // AsyncOperations
+
+    open FSharp.Prelude.Operators.Async
+
+    let traverseAsyncM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        List.foldBack
+            (fun head tail ->
+                f head
+                >>= (fun h -> tail >>= (fun t -> (->>) (cons h t))))
+            asyncOps
+            ((->>) [])
+
+    let traverseAsyncA (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        List.foldBack (fun head tail -> cons <!> f head <*> tail) asyncOps ((->>) [])
+
+    let traverseAsyncAParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        List.foldBack (fun head tail -> cons <!> f head <&> tail) asyncOps ((->>) [])
+
+    let sequenceAsyncM (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncM id asyncOps
+
+    let sequenceAsyncA (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncA id asyncOps
+
+    let sequenceAsyncAParallel (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncAParallel id asyncOps
+
 
 [<RequireQualifiedAccess>]
 module Async =
+
+    open FSharp.Prelude.Operators.Async
+
     /// Wraps a value in an Async.
     let singleton (value: 'a) : Async<'a> = async.Return(value)
 
@@ -18,10 +80,10 @@ module Async =
 
     let map2 (f: 'a -> 'b -> 'c) (asyncOp1: Async<'a>) (asyncOp2: Async<'b>) : Async<'c> = f <!> asyncOp1 <*> asyncOp2
 
-    let andMap (asyncOp: Async<'a>) (f: Async<('a -> 'b)>) : Async<'b> = map2 (|>) asyncOp f
+    let andMap (asyncOp: Async<'a>) (f: Async<'a -> 'b>) : Async<'b> = map2 (|>) asyncOp f
 
     let private traverser
-        (f: Async<('b list -> 'b list)> -> Async<'b list> -> Async<'b list>)
+        (f: Async<'b list -> 'b list> -> Async<'b list> -> Async<'b list>)
         (g: 'a -> Async<'b>)
         (list: 'a list)
         : Async<'b list> =
@@ -52,6 +114,9 @@ module Async =
 
 [<AutoOpen>]
 module AsyncExtension =
+
+    open System.Threading.Tasks
+
     type Async with
         /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
         static member AwaitTaskWithInnerException(task: Task<'T>) : Async<'T> =
@@ -89,6 +154,9 @@ module AsyncExtension =
 
 [<AutoOpen>]
 module AsyncCEExtensions =
+
+    open System.Threading.Tasks
+
     type FSharp.Control.AsyncBuilder with
         member _.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> =
             Async.bind f (Async.AwaitTaskWithInnerException task)

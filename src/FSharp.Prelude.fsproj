@@ -16,9 +16,6 @@
     <ItemGroup>
         <Compile Include="Option.fs" />
         <Compile Include="Result.fs" />
-        <Compile Include="AsyncOperators.fs" />
-        <Compile Include="AsyncResultOperators.fs" />
-        <Compile Include="List.fs" />
         <Compile Include="Async.fs" />
         <Compile Include="AsyncResult.fs" />
         <Compile Include="AsyncOption.fs" />
