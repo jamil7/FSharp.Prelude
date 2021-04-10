@@ -55,31 +55,6 @@ open System.Threading.Tasks
 
 type AsyncOption<'a> = Async<'a option>
 
-[<RequireQualifiedAccess>]
-module List =
-    let traverseAsyncOptionM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' -> tail >>= (fun tail' -> !>(List.cons head' tail'))))
-            asyncOptions
-            (!> [])
-
-    let traverseAsyncOptionA (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        List.foldBack (fun head tail -> List.cons <!> f head <*> tail) asyncOptions (!> [])
-
-    let traverseAsyncOptionAParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        List.foldBack (fun head tail -> List.cons <!> f head <&> tail) asyncOptions (!> [])
-
-    let sequenceAsyncOptionM (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
-        traverseAsyncOptionM id asyncOptions
-
-    let sequenceAsyncOptionA (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
-        traverseAsyncOptionA id asyncOptions
-
-    let sequenceAsyncOptionAParallel (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
-        traverseAsyncOptionAParallel id asyncOptions
-
 
 [<RequireQualifiedAccess>]
 module AsyncOption =
@@ -103,7 +78,30 @@ module AsyncOption =
 
     let compose (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>) : 'a -> Async<'c option> = f >=> g
 
-    let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = List.sequenceAsyncOptionM asyncOptions
+    let internal traverseM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        List.foldBack
+            (fun head tail ->
+                f head
+                >>= (fun head' ->
+                    tail
+                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
+            asyncOptions
+            (singleton [])
+
+    let internal traverseA (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) asyncOptions (singleton [])
+
+    let internal traverseAParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) asyncOptions (singleton [])
+
+    let internal sequenceM (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseM id asyncOptions
+
+    let internal sequenceA (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseA id asyncOptions
+
+    let internal sequenceAParallel (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
+        traverseAParallel id asyncOptions
+
+    let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = sequenceM asyncOptions
 
     let parallel' (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
         async {
