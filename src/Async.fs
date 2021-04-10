@@ -142,4 +142,5 @@ module AsyncCEExtensions =
 
         member this.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
 
-        member this.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> = Async.zipParallel async1 async2
+        member this.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> =
+            Async.zipParallel async1 async2

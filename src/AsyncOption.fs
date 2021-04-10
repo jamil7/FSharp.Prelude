@@ -169,7 +169,8 @@ module AsyncOptionCE =
                 asyncOption
                 |> AsyncOption.bind (fun () -> this.While(f, asyncOption))
 
-        member this.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b) : AsyncOption<'b> = AsyncOption.map f asyncOption
+        member this.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b) : AsyncOption<'b> =
+            AsyncOption.map f asyncOption
 
         member this.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>) : AsyncOption<'a * 'b> =
             AsyncOption.zipParallel asyncOption1 asyncOption2

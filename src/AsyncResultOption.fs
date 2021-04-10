@@ -67,7 +67,8 @@ type AsyncResultOption<'a, 'e> = AsyncResult<'a option, 'e>
 
 [<RequireQualifiedAccess>]
 module AsyncResultOption =
-    let singleton (value: 'a) : AsyncResultOption<'a, 'e> = (Option.singleton >> AsyncResult.singleton) value
+    let singleton (value: 'a) : AsyncResultOption<'a, 'e> =
+        (Option.singleton >> AsyncResult.singleton) value
 
     let map (f: 'a -> 'b) (asyncResultOption: AsyncResultOption<'a, 'e>) : AsyncResultOption<'b, 'e> =
         f <!> asyncResultOption
@@ -239,7 +240,11 @@ module AsyncResultOptionCE =
             ) : AsyncResultOption<'a, 'e> =
             async.TryWith(asyncResultOption, f)
 
-        member this.TryFinally(asyncResultOption: AsyncResultOption<'a, 'e>, f: unit -> unit) : AsyncResultOption<'a, 'e> =
+        member this.TryFinally
+            (
+                asyncResultOption: AsyncResultOption<'a, 'e>,
+                f: unit -> unit
+            ) : AsyncResultOption<'a, 'e> =
             async.TryFinally(asyncResultOption, f)
 
         member this.Using
@@ -280,7 +285,8 @@ module AsyncResultOptionCEExtensions =
     type AsyncResultOptionBuilder with
         member inline this.Source(asyncOp: Async<'a>) : AsyncResultOption<'a, exn> = AsyncResultOption.ofAsync asyncOp
 
-        member inline this.Source(result: Result<'a, 'e>) : AsyncResultOption<'a, 'e> = AsyncResultOption.ofResult result
+        member inline this.Source(result: Result<'a, 'e>) : AsyncResultOption<'a, 'e> =
+            AsyncResultOption.ofResult result
 
         member inline this.Source(task: Task<'a>) : AsyncResultOption<'a, exn> =
             AsyncResultOption.ofTask (fun () -> task)
