@@ -85,8 +85,7 @@ module List =
 module AsyncResult =
 
     /// Wraps a value in an AsyncResult.
-    let singleton (value: 'a) : AsyncResult<'a, 'e> =
-        (Result.singleton >> Async.singleton) value
+    let singleton (value: 'a) : AsyncResult<'a, 'e> = !>value
 
     let map (f: 'a -> 'b) (asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'b, 'e> = f <!> asyncResult
 
