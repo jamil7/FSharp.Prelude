@@ -1,6 +1,5 @@
 namespace FSharp.Prelude
 
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 [<RequireQualifiedAccess>]
 module List =
 
