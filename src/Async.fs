@@ -34,25 +34,21 @@ namespace FSharp.Prelude
 [<RequireQualifiedAccess>]
 module List =
 
-    let cons head tail = head :: tail
-
-    // AsyncOperations
-
     open FSharp.Prelude.Operators.Async
 
     let traverseAsyncM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
         List.foldBack
             (fun head tail ->
                 f head
-                >>= (fun head' -> tail >>= (fun tail' -> !>(cons head' tail'))))
+                >>= (fun head' -> tail >>= (fun tail' -> !>(List.cons head' tail'))))
             asyncOps
             (!> [])
 
     let traverseAsyncA (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack (fun head tail -> cons <!> f head <*> tail) asyncOps (!> [])
+        List.foldBack (fun head tail -> List.cons <!> f head <*> tail) asyncOps (!> [])
 
     let traverseAsyncAParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack (fun head tail -> cons <!> f head <&> tail) asyncOps (!> [])
+        List.foldBack (fun head tail -> List.cons <!> f head <&> tail) asyncOps (!> [])
 
     let sequenceAsyncM (asyncOps: Async<'a> list) : Async<'a list> = traverseAsyncM id asyncOps
 
