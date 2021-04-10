@@ -4,8 +4,6 @@ open FSharp.Prelude
 
 [<AutoOpen>]
 module AsyncResultOptionOperators =
-    let (!>) (value: 'a) : Async<Result<'a option, 'e>> =
-        (Option.singleton >> AsyncResult.singleton) value
 
     let (<!>) (f: 'a -> 'b) (asyncResultOption: AsyncResult<'a option, 'e>) : AsyncResult<'b option, 'e> =
         (Option.map >> AsyncResult.map) f asyncResultOption
@@ -67,51 +65,9 @@ open System.Threading.Tasks
 
 type AsyncResultOption<'a, 'e> = AsyncResult<'a option, 'e>
 
-
-[<RequireQualifiedAccess>]
-module List =
-    let traverseAsyncResultOptionM
-        (f: 'a -> AsyncResultOption<'b, 'e>)
-        (asyncResultOptions: 'a list)
-        : AsyncResultOption<'b list, 'e> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' -> tail >>= (fun tail' -> !>(List.cons head' tail'))))
-            asyncResultOptions
-            (!> [])
-
-    let traverseAsyncResultOptionA
-        (f: 'a -> AsyncResultOption<'b, 'e>)
-        (asyncResultOptions: 'a list)
-        : AsyncResultOption<'b list, 'e> =
-        List.foldBack (fun head tail -> List.cons <!> f head <*> tail) asyncResultOptions (!> [])
-
-    let traverseAsyncResultOptionAParallel
-        (f: 'a -> AsyncResultOption<'b, 'e>)
-        (asyncResultOptions: 'a list)
-        : AsyncResultOption<'b list, 'e> =
-        List.foldBack (fun head tail -> List.cons <!> f head <&> tail) asyncResultOptions (!> [])
-
-    let sequenceAsyncResultOptionM
-        (asyncResultOptions: AsyncResultOption<'a, 'e> list)
-        : AsyncResultOption<'a list, 'e> =
-        traverseAsyncResultOptionM id asyncResultOptions
-
-    let sequenceAsyncResultOptionA
-        (asyncResultOptions: AsyncResultOption<'a, 'e> list)
-        : AsyncResultOption<'a list, 'e> =
-        traverseAsyncResultOptionA id asyncResultOptions
-
-    let sequenceAsyncResultOptionAParallel
-        (asyncResultOptions: AsyncResultOption<'a, 'e> list)
-        : AsyncResultOption<'a list, 'e> =
-        traverseAsyncResultOptionAParallel id asyncResultOptions
-
-
 [<RequireQualifiedAccess>]
 module AsyncResultOption =
-    let singleton (value: 'a) : AsyncResultOption<'a, 'e> = !>value
+    let singleton (value: 'a) : AsyncResultOption<'a, 'e> = (Option.singleton >> AsyncResult.singleton) value
 
     let map (f: 'a -> 'b) (asyncResultOption: AsyncResultOption<'a, 'e>) : AsyncResultOption<'b, 'e> =
         f <!> asyncResultOption
@@ -169,12 +125,47 @@ module AsyncResultOption =
         : 'a -> AsyncResultOption<'c, 'e> =
         f >=> g
 
+    let internal traverseM
+        (f: 'a -> AsyncResultOption<'b, 'e>)
+        (asyncResultOptions: 'a list)
+        : AsyncResultOption<'b list, 'e> =
+        List.foldBack
+            (fun head tail ->
+                f head
+                >>= (fun head' ->
+                    tail
+                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
+            asyncResultOptions
+            (singleton [])
+
+    let internal traverseA
+        (f: 'a -> AsyncResultOption<'b, 'e>)
+        (asyncResultOptions: 'a list)
+        : AsyncResultOption<'b list, 'e> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) asyncResultOptions (singleton [])
+
+    let internal traverseAParallel
+        (f: 'a -> AsyncResultOption<'b, 'e>)
+        (asyncResultOptions: 'a list)
+        : AsyncResultOption<'b list, 'e> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) asyncResultOptions (singleton [])
+
+    let internal sequenceM (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
+        traverseM id asyncResultOptions
+
+    let internal sequenceA (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
+        traverseA id asyncResultOptions
+
+    let internal sequenceAParallel
+        (asyncResultOptions: AsyncResultOption<'a, 'e> list)
+        : AsyncResultOption<'a list, 'e> =
+        traverseAParallel id asyncResultOptions
 
     let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
-        List.sequenceAsyncResultOptionM asyncResultOptions
+        sequenceM asyncResultOptions
 
     let parallel' (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
-        List.sequenceAsyncResultOptionAParallel asyncResultOptions
+        sequenceAParallel asyncResultOptions
 
     let zip
         (asyncResultOption1: AsyncResultOption<'a, 'e>)

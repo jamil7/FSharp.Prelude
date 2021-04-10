@@ -4,8 +4,6 @@ open FSharp.Prelude
 
 [<AutoOpen>]
 module AsyncOptionOperators =
-    let (!>) (value: 'a) : Async<'a option> =
-        (Option.singleton >> Async.singleton) value
 
     let inline (<!>) (f: 'a -> 'b) (asyncOption: Async<'a option>) : Async<'b option> =
         (Option.map >> Async.map) f asyncOption
@@ -58,7 +56,8 @@ type AsyncOption<'a> = Async<'a option>
 
 [<RequireQualifiedAccess>]
 module AsyncOption =
-    let singleton (value: 'a) : AsyncOption<'a> = !>value
+    let singleton (value: 'a) : AsyncOption<'a> =
+        (Option.singleton >> Async.singleton) value
 
     let map (f: 'a -> 'b) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <!> asyncOption
 
