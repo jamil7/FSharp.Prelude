@@ -87,49 +87,49 @@ module Result =
 module ResultCE =
 
     type ResultBuilder() =
-        member _.Return(value: 'a) : Result<'a, 'e> = Result.singleton value
+        member this.Return(value: 'a) : Result<'a, 'e> = Result.singleton value
 
-        member _.ReturnFrom(result: Result<'a, 'e>) : Result<'a, 'e> = result
+        member this.ReturnFrom(result: Result<'a, 'e>) : Result<'a, 'e> = result
 
-        member _.Zero() : Result<unit, 'e> = Result.singleton ()
+        member this.Zero() : Result<unit, 'e> = Result.singleton ()
 
-        member _.Bind(result: Result<'a, 'e>, f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
+        member this.Bind(result: Result<'a, 'e>, f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
-        member _.Delay(f: unit -> Result<'a, 'e>) : unit -> Result<'a, 'e> = f
+        member this.Delay(f: unit -> Result<'a, 'e>) : unit -> Result<'a, 'e> = f
 
-        member _.Run(f: unit -> Result<'a, 'e>) : Result<'a, 'e> = f ()
+        member this.Run(f: unit -> Result<'a, 'e>) : Result<'a, 'e> = f ()
 
-        member _.Combine(result: Result<unit, 'e>, f: unit -> Result<'a, 'e>) : Result<'a, 'e> = Result.bind f result
+        member this.Combine(result: Result<unit, 'e>, f: unit -> Result<'a, 'e>) : Result<'a, 'e> = Result.bind f result
 
-        member _.TryWith(f: unit -> Result<'a, 'e>, g: exn -> Result<'a, 'e>) : Result<'a, 'e> =
+        member this.TryWith(f: unit -> Result<'a, 'e>, g: exn -> Result<'a, 'e>) : Result<'a, 'e> =
             try
-                f ()
+                this.Run f
             with exn -> g exn
 
-        member _.TryFinally(f: unit -> Result<'a, 'e>, g: unit -> unit) : Result<'a, 'e> =
+        member this.TryFinally(f: unit -> Result<'a, 'e>, g: unit -> unit) : Result<'a, 'e> =
             try
-                f ()
+                this.Run f
             finally
                 g ()
 
-        member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> Result<'a, 'e>) : Result<'a, 'e> =
-            try
-                (fun () -> f disposable) ()
-            finally
+        member this.Using(disposable: 'a :> System.IDisposable, f: 'a -> Result<'a, 'e>) : Result<'a, 'e> =
+            this.TryFinally(
+                (fun () -> f disposable),
                 (fun () ->
                     if not (obj.ReferenceEquals(disposable, null)) then
                         disposable.Dispose())
-                    ()
+            )
 
         member this.While(f: unit -> bool, g: unit -> Result<unit, 'e>) : Result<unit, 'e> =
             if not (f ()) then
                 this.Zero()
             else
-                g () |> Result.bind (fun () -> this.While(f, g))
+                this.Run g
+                |> Result.bind (fun () -> this.While(f, g))
 
-        member _.BindReturn(result: Result<'a, 'e>, f: 'a -> 'b) : Result<'b, 'e> = Result.map f result
+        member this.BindReturn(result: Result<'a, 'e>, f: 'a -> 'b) : Result<'b, 'e> = Result.map f result
 
-        member _.MergeSources(result1: Result<'a, 'e>, result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
+        member this.MergeSources(result1: Result<'a, 'e>, result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
             Result.zip result1 result2
 
     let result = ResultBuilder()

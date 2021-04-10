@@ -82,48 +82,48 @@ module Option =
 module OptionCE =
 
     type OptionBuilder() =
-        member _.Return(value) : 'a option = Option.singleton value
+        member this.Return(value) : 'a option = Option.singleton value
 
-        member _.ReturnFrom(option: 'a option) : 'a option = option
+        member this.ReturnFrom(option: 'a option) : 'a option = option
 
-        member _.Zero() : unit option = Option.singleton ()
+        member this.Zero() : unit option = Option.singleton ()
 
-        member _.Bind(option: 'a option, f: 'a -> 'b option) : 'b option = Option.bind f option
+        member this.Bind(option: 'a option, f: 'a -> 'b option) : 'b option = Option.bind f option
 
-        member _.Delay(f: unit -> 'a option) : unit -> 'a option = f
+        member this.Delay(f: unit -> 'a option) : unit -> 'a option = f
 
-        member _.Run(f: unit -> 'a option) : 'a option = f ()
+        member this.Run(f: unit -> 'a option) : 'a option = f ()
 
-        member _.Combine(option: 'a option, f: 'a -> 'b option) : 'b Option = Option.bind f option
+        member this.Combine(option: 'a option, f: 'a -> 'b option) : 'b Option = Option.bind f option
 
-        member _.TryWith(f: unit -> 'a option, g: exn -> 'a option) : 'a option =
+        member this.TryWith(f: unit -> 'a option, g: exn -> 'a option) : 'a option =
             try
-                f ()
+                this.Run f
             with exn -> g exn
 
-        member _.TryFinally(f: unit -> 'a option, g: unit -> unit) : 'a option =
+        member this.TryFinally(f: unit -> 'a option, g: unit -> unit) : 'a option =
             try
-                f ()
+                this.Run f
             finally
                 g ()
 
-        member _.Using(m: 'a :> System.IDisposable, f: 'a -> 'a option) : 'a option =
-            try
-                (fun () -> f m) ()
-            finally
+        member this.Using(disposable: 'a :> System.IDisposable, f: 'a -> 'a option) : 'a option =
+            this.TryFinally(
+                (fun () -> f disposable),
                 (fun () ->
-                    if not (obj.ReferenceEquals(m, null)) then
-                        m.Dispose())
-                    ()
+                    if not (obj.ReferenceEquals(disposable, null)) then
+                        disposable.Dispose())
+            )
 
         member this.While(f: unit -> bool, g: unit -> Option<unit>) : Option<unit> =
             if not (f ()) then
                 this.Zero()
             else
-                g () |> Option.bind (fun () -> this.While(f, g))
+                this.Run g
+                |> Option.bind (fun () -> this.While(f, g))
 
-        member _.BindReturn(option: 'a option, f: 'a -> 'b) : 'b option = Option.map f option
+        member this.BindReturn(option: 'a option, f: 'a -> 'b) : 'b option = Option.map f option
 
-        member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
+        member this.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
 
     let option = OptionBuilder()

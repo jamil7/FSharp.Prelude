@@ -139,27 +139,27 @@ module AsyncOption =
 [<AutoOpen>]
 module AsyncOptionCE =
     type AsyncOptionBuilder() =
-        member _.Return(value: 'a) : AsyncOption<'a> = AsyncOption.singleton value
+        member this.Return(value: 'a) : AsyncOption<'a> = AsyncOption.singleton value
 
-        member _.ReturnFrom(asyncOption: AsyncOption<'a>) : AsyncOption<'a> = asyncOption
+        member this.ReturnFrom(asyncOption: AsyncOption<'a>) : AsyncOption<'a> = asyncOption
 
-        member _.Zero() : AsyncOption<unit> = AsyncOption.singleton ()
+        member this.Zero() : AsyncOption<unit> = AsyncOption.singleton ()
 
-        member _.Bind(asyncOption: AsyncOption<'a>, f: 'a -> AsyncOption<'b>) : AsyncOption<'b> =
+        member this.Bind(asyncOption: AsyncOption<'a>, f: 'a -> AsyncOption<'b>) : AsyncOption<'b> =
             AsyncOption.bind f asyncOption
 
-        member _.Delay(f: unit -> AsyncOption<'a>) : AsyncOption<'a> = async.Delay f
+        member this.Delay(f: unit -> AsyncOption<'a>) : AsyncOption<'a> = async.Delay f
 
-        member _.Combine(unitAsyncOption: AsyncOption<unit>, asyncOption: AsyncOption<'a>) : AsyncOption<'a> =
+        member this.Combine(unitAsyncOption: AsyncOption<unit>, asyncOption: AsyncOption<'a>) : AsyncOption<'a> =
             AsyncOption.bind (fun () -> asyncOption) unitAsyncOption
 
-        member _.TryWith(asyncOption: AsyncOption<'a>, f: exn -> AsyncOption<'a>) : AsyncOption<'a> =
+        member this.TryWith(asyncOption: AsyncOption<'a>, f: exn -> AsyncOption<'a>) : AsyncOption<'a> =
             async.TryWith(asyncOption, f)
 
-        member _.TryFinally(asyncOption: AsyncOption<'a>, f: unit -> unit) : AsyncOption<'a> =
+        member this.TryFinally(asyncOption: AsyncOption<'a>, f: unit -> unit) : AsyncOption<'a> =
             async.TryFinally(asyncOption, f)
 
-        member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncOption<'a>) : AsyncOption<'a> =
+        member this.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncOption<'a>) : AsyncOption<'a> =
             async.Using(disposable, f)
 
         member this.While(f: unit -> bool, asyncOption: AsyncOption<unit>) : AsyncOption<unit> =
@@ -169,23 +169,23 @@ module AsyncOptionCE =
                 asyncOption
                 |> AsyncOption.bind (fun () -> this.While(f, asyncOption))
 
-        member _.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b) : AsyncOption<'b> = AsyncOption.map f asyncOption
+        member this.BindReturn(asyncOption: AsyncOption<'a>, f: 'a -> 'b) : AsyncOption<'b> = AsyncOption.map f asyncOption
 
-        member _.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>) : AsyncOption<'a * 'b> =
+        member this.MergeSources(asyncOption1: AsyncOption<'a>, asyncOption2: AsyncOption<'b>) : AsyncOption<'a * 'b> =
             AsyncOption.zipParallel asyncOption1 asyncOption2
 
-        member inline _.Source(asyncOption: AsyncOption<'a>) : AsyncOption<'a> = asyncOption
+        member inline this.Source(asyncOption: AsyncOption<'a>) : AsyncOption<'a> = asyncOption
 
     let asyncOption = AsyncOptionBuilder()
 
 [<AutoOpen>]
 module AsyncOptionCEExtensions =
     type AsyncOptionBuilder with
-        member inline _.Source(asyncOp: Async<'a>) : AsyncOption<'a> = AsyncOption.ofAsync asyncOp
+        member inline this.Source(asyncOp: Async<'a>) : AsyncOption<'a> = AsyncOption.ofAsync asyncOp
 
-        member inline _.Source(option: 'a option) : AsyncOption<'a> = AsyncOption.ofOption option
+        member inline this.Source(option: 'a option) : AsyncOption<'a> = AsyncOption.ofOption option
 
-        member inline _.Source(task: Task<'a>) : AsyncOption<'a> = AsyncOption.ofTask (fun () -> task)
+        member inline this.Source(task: Task<'a>) : AsyncOption<'a> = AsyncOption.ofTask (fun () -> task)
 
-        member inline _.Source(unitTask: Task) : AsyncOption<unit> =
+        member inline this.Source(unitTask: Task) : AsyncOption<unit> =
             AsyncOption.ofUnitTask (fun () -> unitTask)

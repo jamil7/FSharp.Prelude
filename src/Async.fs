@@ -134,12 +134,12 @@ module AsyncCEExtensions =
     open System.Threading.Tasks
 
     type FSharp.Control.AsyncBuilder with
-        member _.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> =
+        member this.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> =
             Async.bind f (Async.AwaitTaskWithInnerException task)
 
-        member _.Bind(actionTask: Task, f: unit -> Async<unit>) : Async<unit> =
+        member this.Bind(actionTask: Task, f: unit -> Async<unit>) : Async<unit> =
             Async.bind f (Async.AwaitTaskWithInnerException actionTask)
 
-        member _.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
+        member this.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
 
-        member _.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> = Async.zipParallel async1 async2
+        member this.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> = Async.zipParallel async1 async2
