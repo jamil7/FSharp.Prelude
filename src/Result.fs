@@ -2,7 +2,6 @@
 
 [<AutoOpen>]
 module ResultOperators =
-    let (!>) (value: 'a) : Result<'a, 'e> = Ok value
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (result: Result<'a, 'e>) : Result<'b, 'e> = Result.map f result
@@ -29,29 +28,10 @@ namespace FSharp.Prelude
 open FSharp.Prelude.Operators.Result
 
 [<RequireQualifiedAccess>]
-module List =
-
-    let traverseResultM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' -> tail >>= (fun tail' -> !>(List.cons head' tail'))))
-            results
-            (!> [])
-
-    let traverseResultA (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        List.foldBack (fun head tail -> List.cons <!> f head <*> tail) results (!> [])
-
-    let sequenceResultM (asyncOps: Result<'a, 'e> list) : Result<'a list, 'e> = traverseResultM id asyncOps
-
-    let sequenceResultA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseResultA id results
-
-
-[<RequireQualifiedAccess>]
 module Result =
 
     /// Wraps a value in an Ok Result.
-    let singleton (value: 'a) : Result<'a, 'e> = !>value
+    let singleton (value: 'a) : Result<'a, 'e> = Ok value
 
     let apply (f: Result<'a -> 'b, 'e>) (result: Result<'a, 'e>) : Result<'b, 'e> = f <*> result
 
@@ -70,15 +50,24 @@ module Result =
 
     let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> = f >=> g
 
-    let traverse (f: 'a -> Result<'b, 'e>) (list: 'a list) : Result<'b list, 'e> =
+    let internal traverseM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
         List.foldBack
             (fun head tail ->
-                (fun head' tail' -> head' :: tail') <!> (f head)
-                <*> tail)
-            list
+                f head
+                >>= (fun head' ->
+                    tail
+                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
+            results
             (singleton [])
 
-    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverse id results
+    let internal traverseA (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) results (singleton [])
+
+    let internal sequenceM (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseM id results
+
+    let internal sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseA id results
+
+    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseM id results
 
     let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2
