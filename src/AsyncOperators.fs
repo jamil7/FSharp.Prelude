@@ -1,5 +1,8 @@
 module FSharp.Prelude.Operators.Async
 
+/// Singleton (return) operator.
+let (->>) (value: 'a) : Async<'a> = async.Return(value)
+
 /// Infix map operator.
 let inline (<!>) (f: 'a -> 'b) (asyncOp: Async<'a>) : Async<'b> = async.Bind(asyncOp, f >> async.Return)
 
@@ -22,4 +25,4 @@ let inline (<&>) (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> =
     }
 
 /// Infix bind operator.
-let inline (>>=) (f: 'a -> Async<'b>) (asyncOp: Async<'a>) : Async<'b> = async.Bind(asyncOp, f)
+let inline (>>=) (asyncOp: Async<'a>) (f: 'a -> Async<'b>)  : Async<'b> = async.Bind(asyncOp, f)
