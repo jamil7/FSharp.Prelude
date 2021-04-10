@@ -32,10 +32,10 @@ module OptionOperators =
 
 namespace FSharp.Prelude
 
+open FSharp.Prelude.Operators.Option
+
 [<RequireQualifiedAccess>]
 module List =
-
-    open FSharp.Prelude.Operators.Option
 
     let traverseOptionM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
         List.foldBack
@@ -55,8 +55,6 @@ module List =
 
 [<RequireQualifiedAccess>]
 module Option =
-
-    open FSharp.Prelude.Operators.Option
 
     let singleton (value: 'a) : 'a option = !>value
 
@@ -85,6 +83,7 @@ module Option =
 
 [<AutoOpen>]
 module OptionCE =
+
     type OptionBuilder() =
         member _.Return(value) : 'a option = Option.singleton value
 
