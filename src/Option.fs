@@ -2,7 +2,6 @@ namespace FSharp.Prelude.Operators.Option
 
 [<AutoOpen>]
 module OptionOperators =
-    let (!>) (value: 'a) : 'a option = Some value
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (option: 'a option) : 'b option = Option.map f option
@@ -35,28 +34,9 @@ namespace FSharp.Prelude
 open FSharp.Prelude.Operators.Option
 
 [<RequireQualifiedAccess>]
-module List =
-
-    let traverseOptionM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' -> tail >>= (fun tail' -> !>(List.cons head' tail'))))
-            options
-            (!> [])
-
-    let traverseOptionA (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        List.foldBack (fun head tail -> List.cons <!> f head <*> tail) options (!> [])
-
-    let sequenceOptionM (asyncOps: Option<'a> list) : Option<'a list> = traverseOptionM id asyncOps
-
-    let sequenceOptionA (options: Option<'a> list) : Option<'a list> = traverseOptionA id options
-
-
-[<RequireQualifiedAccess>]
 module Option =
 
-    let singleton (value: 'a) : 'a option = !>value
+    let singleton (value: 'a) : 'a option = Some value
 
     let apply (f: ('a -> 'b) option) (option: 'a option) : 'b option = f <*> option
 
@@ -66,7 +46,24 @@ module Option =
 
     let compose (f: 'a -> 'b option) (g: 'b -> 'c option) : 'a -> 'c option = f >=> g
 
-    let sequence (options: 'a option list) : 'a list option = List.traverseOptionM id options
+    let internal traverseM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+        List.foldBack
+            (fun head tail ->
+                f head
+                >>= (fun head' ->
+                    tail
+                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
+            options
+            (singleton [])
+
+    let internal traverseA (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) options (singleton [])
+
+    let internal sequenceM (options: Option<'a> list) : Option<'a list> = traverseM id options
+
+    let internal sequenceA (options: Option<'a> list) : Option<'a list> = traverseA id options
+
+    let sequence (options: 'a option list) : 'a list option = sequenceM options
 
     let zip (option1: 'a option) (option2: 'b option) : ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2
