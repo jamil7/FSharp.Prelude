@@ -67,7 +67,7 @@ module Result =
 
     let internal sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseA id results
 
-    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseM id results
+    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = sequenceM results
 
     let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2
