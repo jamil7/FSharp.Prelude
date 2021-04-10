@@ -38,6 +38,6 @@ module List =
 
     let sequenceAsyncM (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceM asyncOps
 
-    let internal sequenceAsyncA (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceA asyncOps
+    let sequenceAsyncA (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceA asyncOps
 
-    let internal sequenceAsyncAParallel (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceAParallel asyncOps
+    let sequenceAsyncAParallel (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceAParallel asyncOps

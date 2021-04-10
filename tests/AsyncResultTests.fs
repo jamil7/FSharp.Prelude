@@ -2,6 +2,7 @@ module Tests
 
 open Expecto
 open FSharp.Prelude
+open FSharp.Prelude
 
 [<Tests>]
 let tests =
@@ -15,6 +16,8 @@ let tests =
        let input = List.map AsyncResult.singleton sample
        
        let! actual = AsyncResult.sequence input
+       
+       List.
        
        Expect.equal actual expected "Should equal"
     }
