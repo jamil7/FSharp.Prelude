@@ -4,33 +4,38 @@ open System
 
 [<RequireQualifiedAccess>]
 module String =
-    let contains (str: string) (source: string): bool = source.Contains(str)
+    let contains (value: string) (source: string) : bool = source.Contains value
 
-    let isEmpty (str: string): bool = str = ""
+    let isEmpty (str: string) : bool = str = ""
 
-    let reverse (str: string): string = String(str.ToCharArray() |> Array.rev)
+    let reverse (str: string) : string = String(str.ToCharArray() |> Array.rev)
 
-    let replace (oldString: string) (newString: string) (source: string) =
-        if String.length oldString = 0 then source else source.Replace(oldString, newString)
+    let replace (oldValue: string) (newValue: string) (source: string) =
+        if String.length oldValue = 0 then
+            source
+        else
+            source.Replace(oldValue, newValue)
 
-    let append str1 str2: string = str1 + str2
+    let append str1 str2 : string = str1 + str2
 
     let split (separator: string) (str: string) = str.Split(separator) |> List.ofArray
 
-    let join (separator: string) (strings: string list): string = String.Join(separator, strings)
+    let join (separator: string) (values: string list) : string = String.Join(separator, values)
 
-    let lines (str: string): string list = split Environment.NewLine str
+    let lines (str: string) : string list = split Environment.NewLine str
 
-    let toUpper (str: string): string = str.ToUpper()
+    let toUpper (str: string) : string = str.ToUpper()
 
-    let toLower (str: string): string = str.ToLower()
+    let toLower (str: string) : string = str.ToLower()
 
-    let padLeft (totalLength: int) (str: string) = str.PadLeft(totalLength)
+    let padLeft (totalWidth: int) (str: string) = str.PadLeft totalWidth
 
-    let padRight (totalLength: int) (str: string) = str.PadRight(totalLength)
+    let padRight (totalWidth: int) (str: string) = str.PadRight totalWidth
 
-    let trim (str: string): string = str.Trim()
+    let trim (str: string) : string = str.Trim()
 
-    let trimStart (str: string): string = str.TrimStart()
+    let trimStart (str: string) : string = str.TrimStart()
 
-    let trimRight (str: string): string = str.TrimEnd()
+    let trimRight (str: string) : string = str.TrimEnd()
+
+    let startsWith (value: string) (source: string) : bool = source.StartsWith value
