@@ -78,6 +78,12 @@ module Option =
         | Choice1Of2 left -> Some left
         | Choice2Of2 _ -> None
 
+    /// Creates a safe version of the supplied function, returning None instead of throwing an exception.
+    let ofThrowable (f: 'a -> 'b) a : 'b option =
+        try
+            Some(f a)
+        with _ -> None
+
 [<AutoOpen>]
 module OptionCE =
 
