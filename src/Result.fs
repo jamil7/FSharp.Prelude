@@ -82,6 +82,11 @@ module Result =
         | Choice1Of2 left -> Ok left
         | Choice2Of2 right -> Error right
 
+    /// Creates a safe version of the supplied function, returning Error(exn) instead of throwing an exception.
+    let ofThrowable (f: 'a -> 'b) a : Result<'b, exn> =
+        try
+            Ok(f a)
+        with exn -> Error exn
 
 [<AutoOpen>]
 module ResultCE =
