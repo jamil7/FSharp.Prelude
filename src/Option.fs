@@ -48,7 +48,7 @@ module Option =
 
     let rec private traverser f folder state xs =
         match xs with
-        | [] -> Option.map List.rev state
+        | [] -> List.rev <!> state
         | head :: tail ->
             folder head state
             |> function

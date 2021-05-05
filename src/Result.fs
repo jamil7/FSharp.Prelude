@@ -52,7 +52,7 @@ module Result =
 
     let rec private traverser f folder state xs =
         match xs with
-        | [] -> Result.map List.rev state
+        | [] -> List.rev <!> state
         | head :: tail ->
             folder head state
             |> function
