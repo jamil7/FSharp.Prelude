@@ -15,8 +15,7 @@ module List =
 
     let sequenceOptionA (options: Option<'a> list) : Option<'a list> = Option.sequenceA options
 
-
-    // Results Operations
+    // Results operations
 
     let mapResultM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> = Result.mapM f results
 
@@ -26,8 +25,7 @@ module List =
 
     let sequenceResultA (results: Result<'a, 'e> list) : Result<'a list, 'e> = Result.sequenceA results
 
-
-    // Asyncs Operations
+    // Asyncs operations
 
     let mapAsyncM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> = Async.mapM f asyncOps
 
@@ -42,7 +40,7 @@ module List =
 
     let sequenceAsyncAParallel (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceAParallel asyncOps
 
-    // AsyncResults Operations
+    // AsyncResults operations
 
     let mapAsyncResultM (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
         AsyncResult.mapM f asyncResults
@@ -62,8 +60,7 @@ module List =
     let sequenceAsyncResultAParallel (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
         AsyncResult.sequenceAParallel asyncResults
 
-
-    // AsyncOptions Operations
+    // AsyncOptions operations
 
     let traverseAsyncOptionM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
         AsyncOption.traverseM f asyncOptions
@@ -83,8 +80,7 @@ module List =
     let sequenceAsyncOptionAParallel (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
         AsyncOption.sequenceAParallel asyncOptions
 
-
-    // AsyncResultOptions Operations
+    // AsyncResultOptions operations
 
     let traverseAsyncResultOptionM
         (f: 'a -> AsyncResultOption<'b, 'e>)
