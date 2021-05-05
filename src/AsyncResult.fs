@@ -48,7 +48,6 @@ module AsyncResultOperators =
 
 namespace FSharp.Prelude
 
-open FSharp.Prelude
 open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
@@ -107,9 +106,9 @@ module AsyncResult =
     let mapM (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
         let folder head tail =
             f head
-            >>= (fun head' ->
-                tail
-                >>= (fun tail' -> singleton <| cons head' tail'))
+            >>= fun head' ->
+                    tail
+                    >>= fun tail' -> singleton <| cons head' tail'
 
         traverser f folder (singleton []) asyncResults
 

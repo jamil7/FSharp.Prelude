@@ -62,9 +62,9 @@ module Result =
     let mapM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
         let folder head tail =
             f head
-            >>= (fun head' ->
-                tail
-                >>= (fun tail' -> singleton <| cons head' tail'))
+            >>= fun head' ->
+                    tail
+                    >>= fun tail' -> singleton <| cons head' tail'
 
         traverser f folder (singleton []) results
 

@@ -58,9 +58,9 @@ module Option =
     let mapM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
         let folder head tail =
             f head
-            >>= (fun head' ->
-                tail
-                >>= (fun tail' -> singleton <| cons head' tail'))
+            >>= fun head' ->
+                    tail
+                    >>= fun tail' -> singleton <| cons head' tail'
 
         traverser f folder (singleton []) options
 
