@@ -50,34 +50,6 @@ module Async =
 
     let andMap (asyncOp: Async<'a>) (f: Async<'a -> 'b>) : Async<'b> = map2 (|>) asyncOp f
 
-    let internal mapM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
-                    tail
-                    >>= (fun tail' -> singleton (cons head' tail'))))
-            asyncOps
-            (singleton [])
-
-    let traverse (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack (fun head tail -> cons <!> f head <*> tail) asyncOps (singleton [])
-
-    let traverseParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        List.foldBack (fun head tail -> cons <!> f head <&> tail) asyncOps (singleton [])
-
-    let sequence (asyncOps: Async<'a> list) : Async<'a list> = mapM id asyncOps
-
-    let sequenceA (asyncOps: Async<'a> list) : Async<'a list> = traverse id asyncOps
-
-    let sequenceAParallel (asyncOps: Async<'a> list) : Async<'a list> = traverseParallel id asyncOps
-
-    let parallel' (asyncOps: Async<'a> list) : Async<'a list> =
-        async {
-            let! resArray = Async.Parallel asyncOps
-            return List.ofArray resArray
-        }
-
     let zip (asyncOp1: Async<'a>) (asyncOp2: Async<'b>) : Async<'a * 'b> =
         (fun a b -> a, b) <!> asyncOp1 <*> asyncOp2
 
