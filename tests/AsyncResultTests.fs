@@ -1,4 +1,4 @@
-module Tests
+module FSharp.Prelude.Tests.AsyncResultTests
 
 open Expecto
 open FSharp.Prelude
