@@ -48,6 +48,7 @@ module AsyncResultOperators =
 
 namespace FSharp.Prelude
 
+open FSharp.Prelude
 open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
@@ -93,40 +94,37 @@ module AsyncResult =
     let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (asyncResult: AsyncResult<'a, 'e1>) : AsyncResult<'b, 'e2> =
         (map f >> mapError g) asyncResult
 
-    let compose (f: 'a -> AsyncResult<'b, 'e>) (g: 'b -> AsyncResult<'c, 'e>) : 'a -> AsyncResult<'c, 'e> = f >=> g
+    let rec private traverser f folder state xs =
+        match xs with
+        | [] -> List.rev <!> state
+        | head :: tail ->
+            async {
+                match! folder head state with
+                | Ok _ as this -> return! traverser f folder (Async.singleton this) tail
+                | Error _ as this -> return this
+            }
 
-    let internal traverseM (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
-                    tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            asyncResults
-            (singleton [])
+    let mapM (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
+        let folder head tail =
+            f head
+            >>= (fun head' ->
+                tail
+                >>= (fun tail' -> singleton <| cons head' tail'))
 
-    let internal traverseA (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) asyncResults (singleton [])
+        traverser f folder (singleton []) asyncResults
 
-    let internal traverseAParallel (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) asyncResults (singleton [])
+    let traverse (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncResults
 
-    let internal sequenceM (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
-        traverseM id asyncResults
+    let traverseParallel (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
+        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncResults
 
-    let internal sequenceA (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
-        traverseA id asyncResults
+    let sequence (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = mapM id asyncResults
 
-    let internal sequenceAParallel (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
-        traverseAParallel id asyncResults
+    let sequenceA (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = traverse id asyncResults
 
-    let sequence (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = sequenceM asyncResults
-
-    let parallel' (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
-        async {
-            let! array = Async.Parallel asyncResults
-            return Result.sequence (List.ofArray array)
-        }
+    let sequenceAParallel (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
+        traverseParallel id asyncResults
 
     let zip (asyncResult1: AsyncResult<'a, 'e>) (asyncResult2: AsyncResult<'b, 'e>) : AsyncResult<'a * 'b, 'e> =
         (fun a b -> a, b) <!> asyncResult1
