@@ -46,24 +46,30 @@ module Option =
 
     let compose (f: 'a -> 'b option) (g: 'b -> 'c option) : 'a -> 'c option = f >=> g
 
-    let internal traverseM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
-                    tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            options
-            (singleton [])
+    let rec private traverser f folder state xs =
+        match xs with
+        | [] -> Option.map List.rev state
+        | head :: tail ->
+            folder head state
+            |> function
+            | Some _ as this -> traverser f folder this tail
+            | None as this -> this
 
-    let internal traverseA (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) options (singleton [])
+    let mapM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+        let folder head tail =
+            f head
+            >>= (fun head' ->
+                tail
+                >>= (fun tail' -> singleton <| cons head' tail'))
 
-    let internal sequenceM (options: Option<'a> list) : Option<'a list> = traverseM id options
+        traverser f folder (singleton []) options
 
-    let internal sequenceA (options: Option<'a> list) : Option<'a list> = traverseA id options
+    let sequence (options: Option<'a> list) : Option<'a list> = mapM id options
 
-    let sequence (options: 'a option list) : 'a list option = sequenceM options
+    let traverse (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) options
+
+    let sequenceA (options: Option<'a> list) : Option<'a list> = traverse id options
 
     let zip (option1: 'a option) (option2: 'b option) : ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2

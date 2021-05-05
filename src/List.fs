@@ -7,13 +7,13 @@ module List =
 
     // Options operations
 
-    let traverseOptionM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> = Option.traverseM f options
+    let mapOptionM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> = Option.mapM f options
 
-    let traverseOptionA (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> = Option.traverseA f options
+    let traverseOption (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> = Option.traverse f options
 
-    let sequenceOptionM (options: Option<'a> list) : Option<'a list> = Option.sequenceM options
+    let sequenceOption (options: Option<'a> list) : Option<'a list> = Option.sequence options
 
-    let sequenceOptionA (options: Option<'a> list) : Option<'a list> = Option.traverseA id options
+    let sequenceOptionA (options: Option<'a> list) : Option<'a list> = Option.sequenceA options
 
 
     // Results Operations
