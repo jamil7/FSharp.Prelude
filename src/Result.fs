@@ -50,24 +50,30 @@ module Result =
 
     let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> = f >=> g
 
-    let internal traverseM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
-                    tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            results
-            (singleton [])
+    let rec private traverser f folder state xs =
+        match xs with
+        | [] -> Result.map List.rev state
+        | head :: tail ->
+            folder head state
+            |> function
+            | Ok _ as this -> traverser f folder this tail
+            | Error _ as this -> this
 
-    let internal traverseA (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) results (singleton [])
+    let mapM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
+        let folder head tail =
+            f head
+            >>= (fun head' ->
+                tail
+                >>= (fun tail' -> singleton <| cons head' tail'))
 
-    let internal sequenceM (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseM id results
+        traverser f folder (singleton []) results
 
-    let internal sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseA id results
+    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = mapM id results
 
-    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = sequenceM results
+    let traverse (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) results
+
+    let sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverse id results
 
     let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2

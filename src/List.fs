@@ -3,7 +3,7 @@ namespace FSharp.Prelude
 [<RequireQualifiedAccess>]
 module List =
 
-    let cons head tail = head :: tail
+    let cons = cons
 
     // Options operations
 
@@ -18,11 +18,11 @@ module List =
 
     // Results Operations
 
-    let traverseResultM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> = Result.traverseM f results
+    let mapResultM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> = Result.mapM f results
 
-    let traverseResultA (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> = Result.traverseA f results
+    let traverseResult (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> = Result.traverse f results
 
-    let sequenceResultM (results: Result<'a, 'e> list) : Result<'a list, 'e> = Result.sequenceM results
+    let sequenceResult (results: Result<'a, 'e> list) : Result<'a list, 'e> = Result.sequence results
 
     let sequenceResultA (results: Result<'a, 'e> list) : Result<'a list, 'e> = Result.sequenceA results
 
