@@ -29,14 +29,14 @@ module List =
 
     // Asyncs Operations
 
-    let traverseAsyncM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> = Async.traverseM f asyncOps
+    let mapAsyncM (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> = Async.mapM f asyncOps
 
-    let traverseAsyncA (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> = Async.traverseA f asyncOps
+    let traverseAsync (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> = Async.traverse f asyncOps
 
-    let traverseAsyncAParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
-        Async.traverseAParallel f asyncOps
+    let traverseAsyncParallel (f: 'a -> Async<'b>) (asyncOps: 'a list) : Async<'b list> =
+        Async.traverseParallel f asyncOps
 
-    let sequenceAsyncM (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceM asyncOps
+    let sequenceAsync (asyncOps: Async<'a> list) : Async<'a list> = Async.sequence asyncOps
 
     let sequenceAsyncA (asyncOps: Async<'a> list) : Async<'a list> = Async.sequenceA asyncOps
 
