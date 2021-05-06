@@ -38,7 +38,7 @@ module List =
 
     let sequenceAsyncResult (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
         AsyncResult.sequence asyncResults
-
+ 
     let sequenceAsyncResultA (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
         AsyncResult.sequenceA asyncResults
 
@@ -47,17 +47,17 @@ module List =
 
     // AsyncOptions operations
 
-    let traverseAsyncOptionM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        AsyncOption.traverseM f asyncOptions
+    let mapAsyncOptionM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        AsyncOption.mapM f asyncOptions
 
-    let traverseAsyncOptionA (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        AsyncOption.traverseA f asyncOptions
+    let traverseAsyncOption (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        AsyncOption.traverse f asyncOptions
 
-    let traverseAsyncOptionAParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        AsyncOption.traverseAParallel f asyncOptions
+    let traverseAsyncOptionParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        AsyncOption.traverseParallel f asyncOptions
 
-    let sequenceAsyncOptionM (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
-        AsyncOption.sequenceM asyncOptions
+    let sequenceAsyncOption (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
+        AsyncOption.sequence asyncOptions
 
     let sequenceAsyncOptionA (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
         AsyncOption.sequenceA asyncOptions
