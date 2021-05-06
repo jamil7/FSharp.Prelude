@@ -206,6 +206,66 @@ let traverseTests =
         ]
 
 [<Tests>]
+let traverseParallelTests =
+    testList
+        "TraverseParallel tests"
+        [
+            testAsync "should return values in same order as given tasks" {
+                let input = [ 1; 2; 3 ]
+                let expected = Ok [ 1; 2; 3 ]
+
+                let! actual = AsyncResult.traverseParallel AsyncResult.singleton input
+                Expect.equal actual expected "should equal"
+            }
+            testAsync "should return map the AsyncResult values" {
+                let transformer = ((+) 10) >> AsyncResult.singleton
+
+                let input = [ 1; 2; 3 ]
+                let expected = Ok [ 11; 12; 13 ]
+
+                let! actual = AsyncResult.traverseParallel transformer input
+                Expect.equal actual expected "should equal"
+            }
+            testAsync "should make an early return if there is an Error" {
+                let mutable currentItem = 0
+
+                let transformer x =
+                    currentItem <- x
+
+                    if x = 2 then
+                        AsyncResult.ofResult (Error "Skip next")
+                    else
+                        AsyncResult.singleton x
+
+                let! _ = AsyncResult.traverseParallel transformer [ 1; 2; 3 ]
+
+                Expect.equal currentItem 2 "should equal"
+            }
+            testAsync "should prove example" {
+                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+
+                let userIds = [ 1; 2; 3 ]
+
+                let expected = Ok userIds
+
+                let! actual = AsyncResult.traverseParallel fetchUser userIds
+
+                Expect.equal actual expected "should equal"
+            }
+            testAsync "should execute async task in sequence" {
+                let delay x =
+                    Async.Sleep(x * 100)
+                    |> Async.bind (fun _ -> AsyncResult.singleton x)
+
+                let input = [ 0; 14; 1; 3 ]
+                let expected = Ok input
+
+                let! actual = AsyncResult.traverseParallel delay input
+                Expect.equal actual expected "Should be run in same order"
+            }
+        ]
+
+[<Tests>]
 let mapMTests =
     testList
         "MapM tests"
