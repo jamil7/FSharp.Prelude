@@ -29,19 +29,6 @@ module AsyncOptionOperators =
             | None -> Async.singleton None)
             asyncOption
 
-    let inline (>=>) (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>) : 'a -> Async<'c option> =
-        fun x ->
-            async {
-                let! f' = f x
-
-                let! g' =
-                    match f' with
-                    | Some thing -> g thing
-                    | None -> Async.singleton None
-
-                return g'
-            }
-
     let inline (<|>) (asyncOption1: Async<'a option>) (asyncOption2: Async<'a option>) : Async<'a Option> =
         Async.map2 Option.alternative asyncOption1 asyncOption2
 
@@ -75,38 +62,36 @@ module AsyncOption =
 
     let andMap (asyncOption: AsyncOption<'a>) (f: AsyncOption<'a -> 'b>) : AsyncOption<'b> = map2 (|>) asyncOption f
 
-    let compose (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>) : 'a -> Async<'c option> = f >=> g
+    let rec private traverser (f: 'a -> AsyncOption<'b>) folder state xs =
+        match xs with
+        | [] -> List.rev <!> state
+        | head :: tail ->
+            async {
+                match! folder head state with
+                | Some _ as this -> return! traverser f folder (Async.singleton this) tail
+                | None as this -> return this
+            }
 
-    let internal traverseM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
+    let mapM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        let folder head tail =
+            f head
+            >>= fun head' ->
                     tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            asyncOptions
-            (singleton [])
+                    >>= fun tail' -> singleton <| cons head' tail'
 
-    let internal traverseA (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) asyncOptions (singleton [])
+        traverser f folder (singleton []) asyncOptions
 
-    let internal traverseAParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) asyncOptions (singleton [])
+    let traverse (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncOptions
 
-    let internal sequenceM (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseM id asyncOptions
+    let traverseParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncOptions
 
-    let internal sequenceA (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseA id asyncOptions
+    let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = mapM id asyncOptions
 
-    let internal sequenceAParallel (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
-        traverseAParallel id asyncOptions
+    let sequenceA (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverse id asyncOptions
 
-    let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = sequenceM asyncOptions
-
-    let parallel' (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> =
-        async {
-            let! array = Async.Parallel asyncOptions
-            return Option.sequence (List.ofArray array)
-        }
+    let sequenceAParallel (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseParallel id asyncOptions
 
     let zip (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) : Async<('a * 'b) option> =
         (fun a b -> a, b) <!> asyncOption1

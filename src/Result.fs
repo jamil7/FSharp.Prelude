@@ -16,12 +16,6 @@ module ResultOperators =
     /// Infix bind operator.
     let inline (>>=) (result: Result<'a, 'e>) (f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
-    let (>=>) (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> =
-        fun x ->
-            match f x with
-            | Ok ok -> g ok
-            | Error e -> Error e
-
 
 namespace FSharp.Prelude
 
@@ -48,26 +42,30 @@ module Result =
     let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (result: Result<'a, 'e1>) : Result<'b, 'e2> =
         (Result.map f >> Result.mapError g) result
 
-    let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> = f >=> g
+    let rec private traverser (f: 'a -> Result<'b, 'e>) folder state xs =
+        match xs with
+        | [] -> List.rev <!> state
+        | head :: tail ->
+            folder head state
+            |> function
+            | Ok _ as this -> traverser f folder this tail
+            | Error _ as this -> this
 
-    let internal traverseM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
+    let mapM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
+        let folder head tail =
+            f head
+            >>= fun head' ->
                     tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            results
-            (singleton [])
+                    >>= fun tail' -> singleton <| cons head' tail'
 
-    let internal traverseA (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) results (singleton [])
+        traverser f folder (singleton []) results
 
-    let internal sequenceM (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseM id results
+    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = mapM id results
 
-    let internal sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverseA id results
+    let traverse (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) results
 
-    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = sequenceM results
+    let sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverse id results
 
     let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2
@@ -83,7 +81,7 @@ module Result =
         | Choice2Of2 right -> Error right
 
     /// Creates a safe version of the supplied function, returning Error(exn) instead of throwing an exception.
-    let ofThrowable (f: 'a -> 'b) a : Result<'b, exn> =
+    let ofThrowable (f: 'a -> 'b) (a: 'a) : Result<'b, exn> =
         try
             Ok(f a)
         with exn -> Error exn

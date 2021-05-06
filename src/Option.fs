@@ -16,12 +16,6 @@ module OptionOperators =
     /// Infix bind operator.
     let inline (>>=) (option: 'a option) (f: 'a -> 'b option) : 'b option = Option.bind f option
 
-    let inline (>=>) (f: 'a -> 'b option) (g: 'b -> 'c option) : 'a -> 'c option =
-        fun x ->
-            match f x with
-            | Some thing -> g thing
-            | None -> None
-
     /// Infix alternative operator.
     let inline (<|>) (option1: 'a option) (option2: 'a option) : 'a option =
         match option1, option2 with
@@ -44,26 +38,30 @@ module Option =
 
     let andMap (option: 'a option) (f: ('a -> 'b) option) : 'b option = Option.map2 (|>) option f
 
-    let compose (f: 'a -> 'b option) (g: 'b -> 'c option) : 'a -> 'c option = f >=> g
+    let rec private traverser (f: 'a -> Option<'b>) folder state xs =
+        match xs with
+        | [] -> List.rev <!> state
+        | head :: tail ->
+            folder head state
+            |> function
+            | Some _ as this -> traverser f folder this tail
+            | None as this -> this
 
-    let internal traverseM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
+    let mapM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+        let folder head tail =
+            f head
+            >>= fun head' ->
                     tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            options
-            (singleton [])
+                    >>= fun tail' -> singleton <| cons head' tail'
 
-    let internal traverseA (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) options (singleton [])
+        traverser f folder (singleton []) options
 
-    let internal sequenceM (options: Option<'a> list) : Option<'a list> = traverseM id options
+    let sequence (options: Option<'a> list) : Option<'a list> = mapM id options
 
-    let internal sequenceA (options: Option<'a> list) : Option<'a list> = traverseA id options
+    let traverse (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) options
 
-    let sequence (options: 'a option list) : 'a list option = sequenceM options
+    let sequenceA (options: Option<'a> list) : Option<'a list> = traverse id options
 
     let zip (option1: 'a option) (option2: 'b option) : ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2
@@ -79,7 +77,7 @@ module Option =
         | Choice2Of2 _ -> None
 
     /// Creates a safe version of the supplied function, returning None instead of throwing an exception.
-    let ofThrowable (f: 'a -> 'b) a : 'b option =
+    let ofThrowable (f: 'a -> 'b) (a: 'a) : 'b option =
         try
             Some(f a)
         with _ -> None

@@ -35,22 +35,6 @@ module AsyncResultOptionOperators =
             | None -> AsyncResult.singleton None)
             asyncResultOption
 
-    let inline (>=>)
-        (f: 'a -> AsyncResult<'b option, 'e>)
-        (g: 'b -> AsyncResult<'c option, 'e>)
-        : 'a -> AsyncResult<'c option, 'e> =
-        fun x ->
-            asyncResult {
-                let! f' = f x
-
-                let! g' =
-                    match f' with
-                    | Some thing -> g thing
-                    | None -> AsyncResult.singleton None
-
-                return g'
-            }
-
     let inline (<|>)
         (asyncOption1: AsyncResult<'a option, 'e>)
         (asyncOption2: AsyncResult<'a option, 'e>)
@@ -120,53 +104,42 @@ module AsyncResultOption =
         : AsyncResultOption<'b, 'e2> =
         (map f >> mapError g) asyncResultOption
 
-    let compose
-        (f: 'a -> AsyncResultOption<'b, 'e>)
-        (g: 'b -> AsyncResultOption<'c, 'e>)
-        : 'a -> AsyncResultOption<'c, 'e> =
-        f >=> g
+    let rec private traverser (f: 'a -> AsyncResultOption<'b, 'e>) folder state xs =
+        match xs with
+        | [] -> List.rev <!> state
+        | head :: tail ->
+            async {
+                match! folder head state with
+                | Ok _ as this -> return! traverser f folder (Async.singleton this) tail
+                | Error _ as this -> return this
+            }
 
-    let internal traverseM
-        (f: 'a -> AsyncResultOption<'b, 'e>)
-        (asyncResultOptions: 'a list)
-        : AsyncResultOption<'b list, 'e> =
-        List.foldBack
-            (fun head tail ->
-                f head
-                >>= (fun head' ->
+    let mapM (f: 'a -> AsyncResultOption<'b, 'e>) (asyncResultOptions: 'a list) : AsyncResultOption<'b list, 'e> =
+        let folder head tail =
+            f head
+            >>= fun head' ->
                     tail
-                    >>= (fun tail' -> singleton ((fun h t -> h :: t) head' tail'))))
-            asyncResultOptions
-            (singleton [])
+                    >>= fun tail' -> singleton <| cons head' tail'
 
-    let internal traverseA
+        traverser f folder (singleton []) asyncResultOptions
+
+    let traverse (f: 'a -> AsyncResultOption<'b, 'e>) (asyncResultOptions: 'a list) : AsyncResultOption<'b list, 'e> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncResultOptions
+
+    let traverseParallel
         (f: 'a -> AsyncResultOption<'b, 'e>)
         (asyncResultOptions: 'a list)
         : AsyncResultOption<'b list, 'e> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) asyncResultOptions (singleton [])
-
-    let internal traverseAParallel
-        (f: 'a -> AsyncResultOption<'b, 'e>)
-        (asyncResultOptions: 'a list)
-        : AsyncResultOption<'b list, 'e> =
-        List.foldBack (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) asyncResultOptions (singleton [])
-
-    let internal sequenceM (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
-        traverseM id asyncResultOptions
-
-    let internal sequenceA (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
-        traverseA id asyncResultOptions
-
-    let internal sequenceAParallel
-        (asyncResultOptions: AsyncResultOption<'a, 'e> list)
-        : AsyncResultOption<'a list, 'e> =
-        traverseAParallel id asyncResultOptions
+        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncResultOptions
 
     let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
-        sequenceM asyncResultOptions
+        mapM id asyncResultOptions
 
-    let parallel' (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
-        sequenceAParallel asyncResultOptions
+    let sequenceA (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
+        traverse id asyncResultOptions
+
+    let sequenceAParallel (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
+        traverseParallel id asyncResultOptions
 
     let zip
         (asyncResultOption1: AsyncResultOption<'a, 'e>)
