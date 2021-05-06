@@ -16,7 +16,5 @@ let test1 =
         Expect.equal actual expected "Should equal"
     }
 
-
-
 [<Tests>]
 let tests = testList "Result tests" [ test1 ]
