@@ -95,10 +95,10 @@ module AsyncOption =
         traverser f folder (singleton []) asyncOptions
 
     let traverse (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        traverser f (fun head tail -> (fun h t -> h :: t) <!> f head <*> tail) (singleton []) asyncOptions
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncOptions
 
     let traverseParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        traverser f (fun head tail -> (fun h t -> h :: t) <!> f head <&> tail) (singleton []) asyncOptions
+        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncOptions
 
     let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = mapM id asyncOptions
 
