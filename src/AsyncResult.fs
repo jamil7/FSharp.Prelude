@@ -33,18 +33,6 @@ module AsyncResultOperators =
             | Error error -> Async.singleton (Error error))
             asyncResult
 
-    let inline (>=>) (f: 'a -> Async<Result<'b, 'e>>) (g: 'b -> Async<Result<'c, 'e>>) : 'a -> Async<Result<'c, 'e>> =
-        fun x ->
-            async {
-                let! f' = f x
-
-                let! g' =
-                    match f' with
-                    | Ok ok -> g ok
-                    | Error e -> Async.singleton (Error e)
-
-                return g'
-            }
 
 namespace FSharp.Prelude
 

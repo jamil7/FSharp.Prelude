@@ -29,19 +29,6 @@ module AsyncOptionOperators =
             | None -> Async.singleton None)
             asyncOption
 
-    let inline (>=>) (f: 'a -> Async<'b option>) (g: 'b -> Async<'c option>) : 'a -> Async<'c option> =
-        fun x ->
-            async {
-                let! f' = f x
-
-                let! g' =
-                    match f' with
-                    | Some thing -> g thing
-                    | None -> Async.singleton None
-
-                return g'
-            }
-
     let inline (<|>) (asyncOption1: Async<'a option>) (asyncOption2: Async<'a option>) : Async<'a Option> =
         Async.map2 Option.alternative asyncOption1 asyncOption2
 

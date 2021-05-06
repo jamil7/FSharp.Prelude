@@ -16,12 +16,6 @@ module ResultOperators =
     /// Infix bind operator.
     let inline (>>=) (result: Result<'a, 'e>) (f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
-    let (>=>) (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> =
-        fun x ->
-            match f x with
-            | Ok ok -> g ok
-            | Error e -> Error e
-
 
 namespace FSharp.Prelude
 

@@ -35,22 +35,6 @@ module AsyncResultOptionOperators =
             | None -> AsyncResult.singleton None)
             asyncResultOption
 
-    let inline (>=>)
-        (f: 'a -> AsyncResult<'b option, 'e>)
-        (g: 'b -> AsyncResult<'c option, 'e>)
-        : 'a -> AsyncResult<'c option, 'e> =
-        fun x ->
-            asyncResult {
-                let! f' = f x
-
-                let! g' =
-                    match f' with
-                    | Some thing -> g thing
-                    | None -> AsyncResult.singleton None
-
-                return g'
-            }
-
     let inline (<|>)
         (asyncOption1: AsyncResult<'a option, 'e>)
         (asyncOption2: AsyncResult<'a option, 'e>)
