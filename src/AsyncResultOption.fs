@@ -132,15 +132,13 @@ module AsyncResultOption =
         : AsyncResultOption<'b list, 'e> =
         traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncResultOptions
 
-    let internal sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
+    let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
         mapM id asyncResultOptions
 
-    let internal sequenceA (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
+    let sequenceA (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
         traverse id asyncResultOptions
 
-    let internal sequenceAParallel
-        (asyncResultOptions: AsyncResultOption<'a, 'e> list)
-        : AsyncResultOption<'a list, 'e> =
+    let sequenceAParallel (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
         traverseParallel id asyncResultOptions
 
     let zip
