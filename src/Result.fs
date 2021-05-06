@@ -42,7 +42,7 @@ module Result =
     let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (result: Result<'a, 'e1>) : Result<'b, 'e2> =
         (Result.map f >> Result.mapError g) result
 
-    let rec private traverser f folder state xs =
+    let rec private traverser (f: 'a -> Result<'b, 'e>) folder state xs =
         match xs with
         | [] -> List.rev <!> state
         | head :: tail ->
@@ -81,7 +81,7 @@ module Result =
         | Choice2Of2 right -> Error right
 
     /// Creates a safe version of the supplied function, returning Error(exn) instead of throwing an exception.
-    let ofThrowable (f: 'a -> 'b) a : Result<'b, exn> =
+    let ofThrowable (f: 'a -> 'b) (a: 'a) : Result<'b, exn> =
         try
             Ok(f a)
         with exn -> Error exn

@@ -104,7 +104,7 @@ module AsyncResultOption =
         : AsyncResultOption<'b, 'e2> =
         (map f >> mapError g) asyncResultOption
 
-    let rec private traverser f folder state xs =
+    let rec private traverser (f: 'a -> AsyncResultOption<'b, 'e>) folder state xs =
         match xs with
         | [] -> List.rev <!> state
         | head :: tail ->

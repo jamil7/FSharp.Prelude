@@ -38,7 +38,7 @@ module Option =
 
     let andMap (option: 'a option) (f: ('a -> 'b) option) : 'b option = Option.map2 (|>) option f
 
-    let rec private traverser f folder state xs =
+    let rec private traverser (f: 'a -> Option<'b>) folder state xs =
         match xs with
         | [] -> List.rev <!> state
         | head :: tail ->
@@ -77,7 +77,7 @@ module Option =
         | Choice2Of2 _ -> None
 
     /// Creates a safe version of the supplied function, returning None instead of throwing an exception.
-    let ofThrowable (f: 'a -> 'b) a : 'b option =
+    let ofThrowable (f: 'a -> 'b) (a: 'a) : 'b option =
         try
             Some(f a)
         with _ -> None
