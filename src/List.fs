@@ -38,7 +38,7 @@ module List =
 
     let sequenceAsyncResult (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
         AsyncResult.sequence asyncResults
- 
+
     let sequenceAsyncResultA (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
         AsyncResult.sequenceA asyncResults
 
@@ -82,7 +82,7 @@ module List =
     let traverseAsyncResultOptionParallel
         (f: 'a -> AsyncResultOption<'b, 'e>)
         (asyncResultOptions: 'a list)
-        : AsyncResultOption<'b list, 'e> = 
+        : AsyncResultOption<'b list, 'e> =
         AsyncResultOption.traverseParallel f asyncResultOptions
 
     let sequenceAsyncResultOption

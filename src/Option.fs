@@ -38,8 +38,6 @@ module Option =
 
     let andMap (option: 'a option) (f: ('a -> 'b) option) : 'b option = Option.map2 (|>) option f
 
-    let compose (f: 'a -> 'b option) (g: 'b -> 'c option) : 'a -> 'c option = f >=> g
-
     let rec private traverser f folder state xs =
         match xs with
         | [] -> List.rev <!> state

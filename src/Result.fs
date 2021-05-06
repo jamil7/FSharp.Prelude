@@ -42,8 +42,6 @@ module Result =
     let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (result: Result<'a, 'e1>) : Result<'b, 'e2> =
         (Result.map f >> Result.mapError g) result
 
-    let compose (f: 'a -> Result<'b, 'e>) (g: 'b -> Result<'c, 'e>) : 'a -> Result<'c, 'e> = f >=> g
-
     let rec private traverser f folder state xs =
         match xs with
         | [] -> List.rev <!> state
