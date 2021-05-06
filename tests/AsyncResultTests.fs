@@ -146,6 +146,62 @@ let sequenceATests =
         ]
 
 [<Tests>]
+let sequenceAParallelTests =
+    testList
+        "SequenceAParallel tests"
+        [
+            testAsync "should return values in same order as given tasks" {
+                let expected = Ok [ 1; 2; 3 ]
+
+                let input =
+                    [
+                        (AsyncResult.singleton 1)
+                        (AsyncResult.singleton 2)
+                        (AsyncResult.singleton 3)
+                    ]
+
+                let! actual = AsyncResult.sequenceAParallel input
+                Expect.equal actual expected "should equal"
+            }
+            testAsync "should prove example" {
+                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+
+                let userIds = [ 1; 2; 3 ]
+                let expected = Ok userIds
+
+                let! actual =
+                    userIds
+                    |> List.map fetchUser
+                    |> AsyncResult.sequenceAParallel
+
+                Expect.equal actual expected "should equal"
+            }
+            testAsync "should execute async task in sequence" {
+                let mutable orderRun = []
+
+                let dummyAsync : int -> AsyncResult<int, string> =
+                    fun i ->
+                        AsyncResult.ofResult (Ok i)
+                        |> AsyncResult.map
+                            (fun j ->
+                                orderRun <- List.append orderRun [ j ]
+                                j)
+
+                let input =
+                    [
+                        Async.Sleep 100
+                        |> Async.bind (fun _ -> dummyAsync 1)
+                        (dummyAsync 2)
+                        (dummyAsync 3)
+                    ]
+
+                let expectedOkValue = [ 1; 2; 3 ]
+                let! _actual = AsyncResult.sequenceAParallel input
+                Expect.equal orderRun expectedOkValue "Should be run in same order"
+            }
+        ]
+
+[<Tests>]
 let traverseTests =
     testList
         "Traverse tests"
