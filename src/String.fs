@@ -1,7 +1,5 @@
 namespace FSharp.Prelude
 
-open System
-
 [<RequireQualifiedAccess>]
 module String =
 
@@ -11,7 +9,7 @@ module String =
 
     let isEmpty (str: string) : bool = str = ""
 
-    let join (separator: string) (values: string list) : string = String.Join(separator, values)
+    let join (separator: string) (values: string list) : string = System.String.Join(separator, values)
 
     let padLeft (totalWidth: int) (str: string) = str.PadLeft totalWidth
 
@@ -23,11 +21,14 @@ module String =
         else
             source.Replace(oldValue, newValue)
 
-    let reverse (str: string) : string = String(str.ToCharArray() |> Array.rev)
+    let reverse (str: string) : string =
+        System.String(str.ToCharArray() |> Array.rev)
 
-    let split (separator: string) (str: string) = str.Split(separator) |> List.ofArray
+    let split (separator: string) (str: string) =
+        str.Split(separator |> Seq.singleton |> Seq.toArray, System.StringSplitOptions.None)
+        |> List.ofArray
 
-    let lines (str: string) : string list = split Environment.NewLine str
+    let lines (str: string) : string list = split System.Environment.NewLine str
 
     let startsWith (value: string) (source: string) : bool = source.StartsWith value
 
