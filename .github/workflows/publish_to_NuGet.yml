@@ -9,20 +9,13 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        dotnet: [ '2.1.x', '3.1.x', '5.0.x' ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Build on ${{ matrix.os }} using dotnet version ${{ matrix.dotnet }}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup donet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ matrix.dotnet }}
-      - name: Install dependencies
-        run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release
       - name: Test
         run: dotnet test --no-restore --verbosity normal
 
