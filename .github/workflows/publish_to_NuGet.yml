@@ -2,20 +2,27 @@ name: Publish to nuget
 
 on:
   release:
-    types: [created, edited]
+    types: [ created, edited ]
 
 jobs:
-  publish:
-    runs-on: ubuntu-latest
-
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.os }} using dotnet version ${{ matrix.dotnet }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release
       - name: Test
         run: dotnet test --no-restore --verbosity normal
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Create the package
         run: dotnet pack --configuration Release -o Release -p:PackageVersion=${GITHUB_REF/refs\/tags\/v/''} --include-source
       - name: Publish the package to NuGet
