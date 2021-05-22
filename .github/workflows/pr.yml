@@ -1,0 +1,26 @@
+name: PR
+
+on:
+  pull_request: 
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-lastest, macos-latest, windows-latest ]
+        dotnet: [ '2.1.x', '3.1.x', '5.0.x' ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: Dotnet version ${{ matrix.dotnet }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup donet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
