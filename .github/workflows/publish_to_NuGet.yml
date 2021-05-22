@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Build
+        run: dotnet build --configuration Release
       - name: Create the package
         run: dotnet pack --configuration Release -o Release -p:PackageVersion=${GITHUB_REF/refs\/tags\/v/''} --include-source
       - name: Publish the package to NuGet
