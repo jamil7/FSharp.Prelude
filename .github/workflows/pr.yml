@@ -19,6 +19,6 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet }}
       - name: Build
-        run: dotnet build --configuration Release
+        run: dotnet build --configuration Release --framwork netcoreapp${{ matrix.dotnet }}
       - name: Test
         run: dotnet test --no-restore --verbosity normal
