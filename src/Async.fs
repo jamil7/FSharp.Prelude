@@ -104,11 +104,10 @@ module AsyncCEExtensions =
     open System.Threading.Tasks
 
     type FSharp.Control.AsyncBuilder with
-        member this.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> =
-            Async.bind f (Async.AwaitTaskWithInnerException task)
+        member this.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> = Async.bind f (Async.AwaitTask task)
 
         member this.Bind(actionTask: Task, f: unit -> Async<unit>) : Async<unit> =
-            Async.bind f (Async.AwaitTaskWithInnerException actionTask)
+            Async.bind f (Async.AwaitTask actionTask)
 
         member this.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
 
