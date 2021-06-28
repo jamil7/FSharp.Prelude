@@ -14,20 +14,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Internal.fs"/>
-        <Compile Include="Option.fs"/>
-        <Compile Include="Result.fs"/>
-        <Compile Include="Async.fs"/>
-        <Compile Include="AsyncResult.fs"/>
-        <Compile Include="AsyncOption.fs"/>
-        <Compile Include="AsyncResultOption.fs"/>
-        <Compile Include="List.fs"/>
-        <Compile Include="String.fs"/>
+        <Compile Include="Internal.fs" />
+        <Compile Include="Extensions\Option.fs" />
+        <Compile Include="Extensions\Async.fs" />
+        <Compile Include="Extensions\Result.fs" />
+        <Compile Include="Extensions\String.fs" />
+        <Compile Include="Extensions\List.fs" />
+        <Compile Include="ErrorHandling\AsyncOption.fs" />
+        <Compile Include="ErrorHandling\AsyncResult.fs" />
+        <Compile Include="ErrorHandling\AsyncResultOption.fs" />
+        <Compile Include="DependencyManagement\RIO.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FSharp.Core" Version="5.0.0"/>
-        <PackageReference Update="FSharp.Core" Version="5.0.0"/> <!-- workaround for VSMac bug https://github.com/mono/monodevelop/pull/5137 -->
+        <PackageReference Include="FSharp.Core" Version="5.0.0" />
+        <PackageReference Update="FSharp.Core" Version="5.0.0" /> <!-- workaround for VSMac bug https://github.com/mono/monodevelop/pull/5137 -->
     </ItemGroup>
 
 </Project>
