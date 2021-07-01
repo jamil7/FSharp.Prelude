@@ -24,6 +24,8 @@
         <Compile Include="ErrorHandling\AsyncResultOption.fs" />
         <Compile Include="Extensions\List.fs" />
         <Compile Include="DependencyManagement\Reader.fs" />
+        <Compile Include="DependencyManagement\ReaderResult.fs" />
+        <Compile Include="DependencyManagement\ReaderAsyncResult.fs" />
     </ItemGroup>
 
     <ItemGroup>
