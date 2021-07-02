@@ -1,6 +1,6 @@
-namespace FSharp.Prelude.Operators.AsyncResult
+namespace Prelude.Operators.AsyncResult
 
-open FSharp.Prelude
+open Prelude.Extensions
 
 [<AutoOpen>]
 module AsyncResultOperators =
@@ -34,15 +34,17 @@ module AsyncResultOperators =
             asyncResult
 
 
-namespace FSharp.Prelude
+namespace Prelude.ErrorHandling
 
-open FSharp.Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
 type AsyncResult<'a, 'e> = Async<Result<'a, 'e>>
 
 [<RequireQualifiedAccess>]
 module AsyncResult =
+
+    open Prelude.Operators.AsyncResult
+    open Prelude.Extensions
 
     /// Wraps a value in an AsyncResult.
     let singleton (value: 'a) : AsyncResult<'a, 'e> =
