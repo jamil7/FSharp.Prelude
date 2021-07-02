@@ -19,9 +19,6 @@ module ResultReader =
 namespace FSharp.Prelude
 
 open FSharp.Prelude
-open FSharp.Prelude
-open FSharp.Prelude
-open FSharp.Prelude
 
 type ReaderResult<'r, 'a, 'e> = 'r -> Result<'a, 'e>
 
