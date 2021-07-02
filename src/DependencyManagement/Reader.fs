@@ -26,15 +26,15 @@ module Reader =
 
     let map (f: 'a -> 'b) (reader: Reader<'r, 'a>) : Reader<'r, 'b> = f <!> reader
 
-    let apply (f: Reader<'r, 'a -> 'b>) (reader: Reader<'r, 'a>) : Reader<'r, 'b> = fun e -> (f e) (reader e)
+    let apply (f: Reader<'r, 'a -> 'b>) (reader: Reader<'r, 'a>) : Reader<'r, 'b> = f <*> reader
 
-    let bind (f: 'a -> Reader<'r, 'b>) (reader: Reader<'r, 'a>) : Reader<'r, 'b> = fun e -> f (reader e) e
+    let bind (f: 'a -> Reader<'r, 'b>) (reader: Reader<'r, 'a>) : Reader<'r, 'b> = reader >>= f
 
     let run (environment: 'r) (reader: Reader<'r, 'a>) : 'a = reader environment
 
     let ask : Reader<'e, 'e> = id
 
-    let asks (f: 'r -> 'a) : Reader<'r, 'a> = map f ask
+    let asks (f: 'r -> 'a) : Reader<'r, 'a> = f <!> ask
 
     let withReader (f: 'r1 -> 'r2) (reader: Reader<'r2, 'a>) : Reader<'r1, 'a> = f >> reader
 
