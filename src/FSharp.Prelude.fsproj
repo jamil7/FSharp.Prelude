@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <Compile Include="Internal.fs" />
+        <Compile Include="Prelude.fs" />
         <Compile Include="Extensions\Option.fs" />
         <Compile Include="Extensions\Async.fs" />
         <Compile Include="Extensions\Result.fs" />
