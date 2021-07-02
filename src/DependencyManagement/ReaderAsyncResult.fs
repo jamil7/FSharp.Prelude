@@ -155,7 +155,7 @@ module ReaderAsyncResultCEExtensions =
     type ReaderAsyncResultBuilder<'r, 'e> with
         member inline this.Source(sequence: #seq<'a>) : #seq<'a> = sequence
 
-        member inline this.Source(asyncOp: Async<'a>) : ReaderAsyncResult<'e, 'a, exn> =
+        member inline this.Source(asyncOp: Async<'a>) : ReaderAsyncResult<'r, 'a, exn> =
             ReaderAsyncResult.ofAsync asyncOp
 
         member inline this.Source(result: Result<'a, 'e>) : ReaderAsyncResult<'r, 'a, 'e> =

@@ -1,4 +1,4 @@
-﻿namespace FSharp.Prelude.Operators.Result
+﻿namespace Prelude.Operators.Result
 
 [<AutoOpen>]
 module ResultOperators =
@@ -17,12 +17,12 @@ module ResultOperators =
     let inline (>>=) (result: Result<'a, 'e>) (f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
 
-namespace FSharp.Prelude
-
-open FSharp.Prelude.Operators.Result
+namespace Prelude.Extensions
 
 [<RequireQualifiedAccess>]
 module Result =
+
+    open Prelude.Operators.Result
 
     /// Wraps a value in an Ok Result.
     let singleton (value: 'a) : Result<'a, 'e> = Ok value

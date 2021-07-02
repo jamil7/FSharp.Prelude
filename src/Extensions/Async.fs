@@ -1,4 +1,4 @@
-namespace FSharp.Prelude.Operators.Async
+namespace Prelude.Operators.Async
 
 [<AutoOpen>]
 module AsyncOperators =
@@ -28,12 +28,12 @@ module AsyncOperators =
     let inline (>>=) (asyncOp: Async<'a>) (f: 'a -> Async<'b>) : Async<'b> = async.Bind(asyncOp, f)
 
 
-namespace FSharp.Prelude
+namespace Prelude.Extensions
 
 [<RequireQualifiedAccess>]
 module Async =
 
-    open FSharp.Prelude.Operators.Async
+    open Prelude.Operators.Async
 
     /// Wraps a value in an Async.
     let singleton (value: 'a) : Async<'a> = async.Return value

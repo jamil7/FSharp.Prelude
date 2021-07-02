@@ -1,4 +1,4 @@
-namespace FSharp.Prelude.Operators.Option
+namespace Prelude.Operators.Option
 
 [<AutoOpen>]
 module OptionOperators =
@@ -23,12 +23,12 @@ module OptionOperators =
         | left, _ -> left
 
 
-namespace FSharp.Prelude
-
-open FSharp.Prelude.Operators.Option
+namespace Prelude.Extensions
 
 [<RequireQualifiedAccess>]
 module Option =
+
+    open Prelude.Operators.Option
 
     let singleton (value: 'a) : 'a option = Some value
 
@@ -114,9 +114,9 @@ module OptionCE =
         member this.Using(disposable: 'a :> System.IDisposable, f: 'a -> 'a option) : 'a option =
             this.TryFinally(
                 (fun () -> f disposable),
-                (fun () ->
+                fun () ->
                     if not (obj.ReferenceEquals(disposable, null)) then
-                        disposable.Dispose())
+                        disposable.Dispose()
             )
 
         member this.While(f: unit -> bool, g: unit -> Option<unit>) : Option<unit> =
