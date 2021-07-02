@@ -1,9 +1,9 @@
-namespace FSharp.Prelude.Operators.ReaderResult
+namespace Prelude.Operators.ReaderResult
+
+open Prelude.ErrorHandling
 
 [<AutoOpen>]
 module ResultReader =
-
-    open FSharp.Prelude
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (rar: 'r -> Async<Result<'a, 'err>>) : 'r -> Async<Result<'b, 'err>> =
@@ -23,16 +23,16 @@ module ResultReader =
         : 'r -> Async<Result<'b, 'e>> =
         fun e -> AsyncResult.bind (fun a -> f a e) (rar e)
 
-namespace FSharp.Prelude
+namespace Prelude.DependencyManagement
 
+open Prelude.ErrorHandling
+open Prelude.Operators.ReaderResult
 open System.Threading.Tasks
 
 type ReaderAsyncResult<'env, 'a, 'err> = 'env -> AsyncResult<'a, 'err>
 
 [<RequireQualifiedAccess>]
 module ReaderAsyncResult =
-
-    open FSharp.Prelude.Operators.ReaderResult
 
     let singleton (x: 'a) : ReaderAsyncResult<'r, 'a, 'e> = fun _ -> AsyncResult.singleton x
 
@@ -81,7 +81,9 @@ module ReaderAsyncResult =
 
 [<AutoOpen>]
 module ReaderAsyncResultCE =
+
     type ReaderAsyncResultBuilder<'r, 'e>() =
+
         member _.Return(a: 'a) : ReaderAsyncResult<'r, 'a, 'e> = ReaderAsyncResult.singleton a
 
         member _.ReturnFrom(a: ReaderAsyncResult<'r, 'a, 'e>) : ReaderAsyncResult<'r, 'a, 'e> = a
@@ -152,7 +154,9 @@ module ReaderAsyncResultCE =
 
 [<AutoOpen>]
 module ReaderAsyncResultCEExtensions =
+
     type ReaderAsyncResultBuilder<'r, 'e> with
+
         member inline this.Source(sequence: #seq<'a>) : #seq<'a> = sequence
 
         member inline this.Source(asyncOp: Async<'a>) : ReaderAsyncResult<'r, 'a, exn> =

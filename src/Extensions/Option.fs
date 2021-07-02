@@ -25,10 +25,10 @@ module OptionOperators =
 
 namespace Prelude.Extensions
 
+open Prelude.Operators.Option
+
 [<RequireQualifiedAccess>]
 module Option =
-
-    open Prelude.Operators.Option
 
     let singleton (value: 'a) : 'a option = Some value
 
@@ -86,6 +86,7 @@ module Option =
 module OptionCE =
 
     type OptionBuilder() =
+
         member this.Return(value) : 'a option = Option.singleton value
 
         member this.ReturnFrom(option: 'a option) : 'a option = option

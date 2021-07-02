@@ -19,10 +19,10 @@ module ResultOperators =
 
 namespace Prelude.Extensions
 
+open Prelude.Operators.Result
+
 [<RequireQualifiedAccess>]
 module Result =
-
-    open Prelude.Operators.Result
 
     /// Wraps a value in an Ok Result.
     let singleton (value: 'a) : Result<'a, 'e> = Ok value
@@ -90,6 +90,7 @@ module Result =
 module ResultCE =
 
     type ResultBuilder() =
+
         member this.Return(value: 'a) : Result<'a, 'e> = Result.singleton value
 
         member this.ReturnFrom(result: Result<'a, 'e>) : Result<'a, 'e> = result

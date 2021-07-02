@@ -1,4 +1,4 @@
-namespace FSharp.Prelude.Operators.Reader
+namespace Prelude.Operators.Reader
 
 [<AutoOpen>]
 module ReaderOperators =
@@ -12,14 +12,15 @@ module ReaderOperators =
     /// Infix bind operator.
     let inline (>>=) (reader: 'r -> 'a) (f: 'a -> 'r -> 'b) : 'r -> 'b = fun e -> f (reader e) e
 
-namespace FSharp.Prelude
+
+namespace Prelude.DependencyManagement
+
+open Prelude.Operators.Reader
 
 type Reader<'e, 'a> = 'e -> 'a
 
 [<RequireQualifiedAccess>]
 module Reader =
-
-    open FSharp.Prelude.Operators.Reader
 
     let singleton (x: 'a) : Reader<'r, 'a> = fun _ -> x
 
@@ -39,6 +40,7 @@ module Reader =
 
 [<AutoOpen>]
 module ReaderCE =
+
     type ReaderBuilder<'r, 'e>() =
         member _.Return(a: 'a) : Reader<'r, 'a> = Reader.singleton a
 

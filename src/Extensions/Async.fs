@@ -30,10 +30,10 @@ module AsyncOperators =
 
 namespace Prelude.Extensions
 
+open Prelude.Operators.Async
+
 [<RequireQualifiedAccess>]
 module Async =
-
-    open Prelude.Operators.Async
 
     /// Wraps a value in an Async.
     let singleton (value: 'a) : Async<'a> = async.Return value
@@ -63,6 +63,7 @@ module AsyncExtension =
     open System.Threading.Tasks
 
     type Async with
+
         /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
         static member AwaitTaskWithInnerException(task: Task<'T>) : Async<'T> =
             Async.FromContinuations
@@ -104,6 +105,7 @@ module AsyncCEExtensions =
     open System.Threading.Tasks
 
     type FSharp.Control.AsyncBuilder with
+
         member this.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> = Async.bind f (Async.AwaitTask task)
 
         member this.Bind(actionTask: Task, f: unit -> Async<unit>) : Async<unit> =

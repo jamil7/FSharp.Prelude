@@ -36,15 +36,14 @@ module AsyncResultOperators =
 
 namespace Prelude.ErrorHandling
 
+open Prelude.Extensions
+open Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
 type AsyncResult<'a, 'e> = Async<Result<'a, 'e>>
 
 [<RequireQualifiedAccess>]
 module AsyncResult =
-
-    open Prelude.Operators.AsyncResult
-    open Prelude.Extensions
 
     /// Wraps a value in an AsyncResult.
     let singleton (value: 'a) : AsyncResult<'a, 'e> =

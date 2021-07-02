@@ -1,9 +1,9 @@
-namespace FSharp.Prelude.Operators.ReaderResult
+namespace Prelude.Operators.ReaderResult
+
+open Prelude.Extensions
 
 [<AutoOpen>]
 module ResultReader =
-
-    open FSharp.Prelude
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (rr: 'r -> Result<'a, 'err>) : 'r -> Result<'b, 'err> = fun r -> Result.map f (rr r)
@@ -16,14 +16,16 @@ module ResultReader =
     let inline (>>=) (rr: 'r -> Result<'a, 'e>) (f: 'a -> 'r -> Result<'b, 'e>) : 'r -> Result<'b, 'e> =
         fun e -> Result.bind (fun a -> f a e) (rr e)
 
-namespace FSharp.Prelude
+
+namespace Prelude.DependencyManagement
+
+open Prelude.Extensions
+open Prelude.Operators.ReaderResult
 
 type ReaderResult<'r, 'a, 'e> = 'r -> Result<'a, 'e>
 
 [<RequireQualifiedAccess>]
 module ReaderResult =
-
-    open FSharp.Prelude.Operators.ReaderResult
 
     let singleton (x: 'a) : ReaderResult<'r, 'a, 'e> = fun _ -> Result.singleton x
 
@@ -58,7 +60,9 @@ module ReaderResult =
 
 [<AutoOpen>]
 module ReaderResultCE =
+
     type ReaderResultBuilder<'r, 'e>() =
+
         member _.Return(a: 'a) : ReaderResult<'r, 'a, 'e> = ReaderResult.singleton a
 
         member _.ReturnFrom(a: ReaderResult<'r, 'a, 'e>) : ReaderResult<'r, 'a, 'e> = a

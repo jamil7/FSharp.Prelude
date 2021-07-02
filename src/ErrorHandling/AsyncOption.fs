@@ -35,16 +35,14 @@ module AsyncOptionOperators =
 
 namespace Prelude.ErrorHandling
 
+open Prelude.Extensions
+open Prelude.Operators.AsyncOption
 open System.Threading.Tasks
 
 type AsyncOption<'a> = Async<'a option>
 
-
 [<RequireQualifiedAccess>]
 module AsyncOption =
-
-    open Prelude.Operators.AsyncOption
-    open Prelude.Extensions
 
     let singleton (value: 'a) : AsyncOption<'a> =
         (Option.singleton >> Async.singleton) value

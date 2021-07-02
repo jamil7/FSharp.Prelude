@@ -1,11 +1,11 @@
 namespace Prelude.Operators.AsyncResultOption
 
-open Prelude.Extensions
 open Prelude.ErrorHandling
+open Prelude.Extensions
 
 [<AutoOpen>]
 module AsyncResultOptionOperators =
-
+    
     let (<!>) (f: 'a -> 'b) (asyncResultOption: AsyncResult<'a option, 'e>) : AsyncResult<'b option, 'e> =
         (Option.map >> AsyncResult.map) f asyncResultOption
 
@@ -45,16 +45,15 @@ module AsyncResultOptionOperators =
 
 namespace Prelude.ErrorHandling
 
+open Prelude.Extensions
+open Prelude.Operators.AsyncResultOption
 open System.Threading.Tasks
 
 type AsyncResultOption<'a, 'e> = AsyncResult<'a option, 'e>
 
 [<RequireQualifiedAccess>]
 module AsyncResultOption =
-
-    open Prelude.Extensions
-    open Prelude.Operators.AsyncResultOption
-
+    
     let singleton (value: 'a) : AsyncResultOption<'a, 'e> =
         (Option.singleton >> AsyncResult.singleton) value
 
