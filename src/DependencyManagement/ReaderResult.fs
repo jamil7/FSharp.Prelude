@@ -3,7 +3,7 @@ namespace Prelude.Operators.ReaderResult
 open Prelude.Extensions
 
 [<AutoOpen>]
-module ResultReader =
+module ResultReaderOperators =
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (rr: 'r -> Result<'a, 'err>) : 'r -> Result<'b, 'err> = fun r -> Result.map f (rr r)

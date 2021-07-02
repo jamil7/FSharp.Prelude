@@ -3,7 +3,7 @@ namespace Prelude.Operators.ReaderResult
 open Prelude.ErrorHandling
 
 [<AutoOpen>]
-module ResultReader =
+module ResultAsyncReaderOperators =
 
     /// Infix map operator.
     let inline (<!>) (f: 'a -> 'b) (rar: 'r -> Async<Result<'a, 'err>>) : 'r -> Async<Result<'b, 'err>> =
