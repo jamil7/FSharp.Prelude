@@ -50,8 +50,8 @@ module ReaderCE =
 
         member _.Delay(f: unit -> Reader<'r, 'a>) : Reader<'r, 'a> = Reader.bind f (Reader.singleton ())
 
-        member _.Combine(unitAsyncResult: Reader<'r, unit>, asyncResult: Reader<'r, 'a>) : Reader<'r, 'a> =
-            Reader.bind (fun () -> asyncResult) unitAsyncResult
+        member _.Combine(unitReader: Reader<'r, unit>, reader: Reader<'r, 'a>) : Reader<'r, 'a> =
+            Reader.bind (fun () -> reader) unitReader
 
         member _.TryWith(reader: Reader<'r, 'a>, f: exn -> Reader<'r, 'a>) : Reader<'r, 'a> =
             fun r ->
@@ -66,29 +66,27 @@ module ReaderCE =
                 finally
                     f ()
 
-        member this.Using(disposable: 'a :> #System.IDisposable, f) : Reader<'r, 'a> =
+        member this.Using(disposable: 'a :> #System.IDisposable, f: 'a -> Reader<'r, 'b>) : Reader<'r, 'b> =
             this.TryFinally(
-                (fun _ -> f disposable),
-                (fun _ ->
+                f disposable,
+                fun _ ->
                     if not (obj.ReferenceEquals(disposable, null)) then
-                        disposable.Dispose())
+                        disposable.Dispose()
             )
 
-        member this.BindReturn(asyncResult: AsyncResult<'a, 'e>, f: 'a -> 'b) : AsyncResult<'b, 'e> =
-            AsyncResult.map f asyncResult
+        member this.BindReturn(reader: Reader<'r, 'a>, f: 'a -> 'b) : Reader<'r, 'b> = Reader.map f reader
 
-        member this.While(f: unit -> bool, asyncResult: AsyncResult<unit, 'e>) : AsyncResult<unit, 'e> =
+        member this.While(f: unit -> bool, reader: Reader<'r, unit>) : Reader<'r, unit> =
             if not (f ()) then
-                this.Zero()
+                Reader.singleton ()
             else
-                asyncResult
-                |> AsyncResult.bind (fun () -> this.While(f, asyncResult))
+                reader
+                |> Reader.bind (fun () -> this.While(f, reader))
 
-        member this.MergeSources
-            (
-                asyncResult1: AsyncResult<'a, 'e>,
-                asyncResult2: AsyncResult<'b, 'e>
-            ) : AsyncResult<'a * 'b, 'e> =
-            AsyncResult.zipParallel asyncResult1 asyncResult2
+        member this.For(sequence: #seq<'a>, f: 'a -> Reader<'r, unit>) =
+            this.Using(
+                sequence.GetEnumerator(),
+                fun enumerator -> this.While(enumerator.MoveNext, this.Delay(fun _ -> f enumerator.Current))
+            )
 
     let reader<'r, 'e> = ReaderBuilder<'r, 'e>()
