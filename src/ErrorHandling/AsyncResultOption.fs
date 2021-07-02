@@ -43,9 +43,8 @@ module AsyncResultOptionOperators =
         AsyncResult.map2 Option.alternative asyncOption1 asyncOption2
 
 
-namespace FSharp.Prelude
+namespace Prelude.ErrorHandling
 
-open Prelude.ErrorHandling
 open System.Threading.Tasks
 
 type AsyncResultOption<'a, 'e> = AsyncResult<'a option, 'e>

@@ -1,4 +1,6 @@
-namespace FSharp.Prelude
+namespace Prelude.Extensions
+
+open Prelude.ErrorHandling
 
 [<RequireQualifiedAccess>]
 module List =
