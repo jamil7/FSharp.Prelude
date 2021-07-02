@@ -46,7 +46,7 @@ module ReaderCE =
 
         member _.Zero() : Reader<'r, unit> = Reader.singleton ()
 
-        member _.Bind(reader: Reader<'r, 'a>, f: 'a -> 'r -> 'a) = Reader.bind f reader
+        member _.Bind(reader: Reader<'r, 'a>, f: 'a -> Reader<'r, 'a>) = Reader.bind f reader
 
         member _.Delay(f: unit -> Reader<'r, 'a>) : Reader<'r, 'a> = Reader.bind f (Reader.singleton ())
 
