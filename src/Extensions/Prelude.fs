@@ -1,4 +1,4 @@
-namespace Prelude
+namespace Prelude.Extensions
 
 [<AutoOpen>]
 module Prelude =
@@ -14,12 +14,7 @@ module Prelude =
         |> System.NotImplementedException
         |> raise
 
-    /// Applies `f` to `a` and returns `a`. 
+    /// Applies `f` to `a` and returns `a`.
     let inline tap f a =
         f a
         a
-    
-    
-
-    
-    
