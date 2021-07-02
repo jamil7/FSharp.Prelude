@@ -5,7 +5,7 @@ open Prelude.ErrorHandling
 [<RequireQualifiedAccess>]
 module List =
 
-    let cons = cons
+    let cons (head: 'a) (tail: 'a list) : 'a list = cons head tail
 
     // Options operations
 
