@@ -69,7 +69,7 @@ module ReaderCE =
         member this.Using(disposable: 'a :> #System.IDisposable, f: 'a -> Reader<'r, 'b>) : Reader<'r, 'b> =
             this.TryFinally(
                 f disposable,
-                fun _ ->
+                fun () ->
                     if not (obj.ReferenceEquals(disposable, null)) then
                         disposable.Dispose()
             )
@@ -86,7 +86,7 @@ module ReaderCE =
         member this.For(sequence: #seq<'a>, f: 'a -> Reader<'r, unit>) =
             this.Using(
                 sequence.GetEnumerator(),
-                fun enumerator -> this.While(enumerator.MoveNext, this.Delay(fun _ -> f enumerator.Current))
+                fun enumerator -> this.While(enumerator.MoveNext, this.Delay(fun () -> f enumerator.Current))
             )
 
     let reader<'r, 'e> = ReaderBuilder<'r, 'e>()
