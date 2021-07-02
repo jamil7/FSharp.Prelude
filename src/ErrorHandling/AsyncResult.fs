@@ -131,6 +131,9 @@ module AsyncResult =
 
     let ofResult (result: Result<'a, 'e>) : AsyncResult<'a, 'e> = Async.singleton result
 
+    let ofChoice (choice: Choice<'a, 'e>) : AsyncResult<'a, 'e> =
+        Async.singleton (Result.ofChoice choice)
+
     let ofTask (lazyTask: unit -> Task<'a>) : AsyncResult<'a, exn> =
         async.Delay(lazyTask >> Async.AwaitTask)
         |> ofAsync
