@@ -1,7 +1,7 @@
 namespace Prelude.Extensions
 
 [<AutoOpen>]
-module Prelude =
+module FunctionalExtensions =
     /// Flips the order of the arguments.
     let inline flip f a b = f b a
 
