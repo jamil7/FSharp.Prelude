@@ -7,9 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="AsyncResultTests.fs" />
-    <Compile Include="ResultTests.fs" />
     <Compile Include="Main.fs" />
+    <Compile Include="ErrorHandling\AsyncResultTests.fs" />
+    <Compile Include="ErrorHandling\ResultTests.fs" />
+    <Folder Include="DependencyManagement" />
   </ItemGroup>
 
   <ItemGroup>
