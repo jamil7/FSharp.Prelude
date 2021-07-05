@@ -1,10 +1,11 @@
-namespace FSharp.Prelude.Operators.AsyncResultOption
+namespace Prelude.Operators.AsyncResultOption
 
-open FSharp.Prelude
+open Prelude.ErrorHandling
+open Prelude.Extensions
 
 [<AutoOpen>]
 module AsyncResultOptionOperators =
-
+    
     let (<!>) (f: 'a -> 'b) (asyncResultOption: AsyncResult<'a option, 'e>) : AsyncResult<'b option, 'e> =
         (Option.map >> AsyncResult.map) f asyncResultOption
 
@@ -42,15 +43,17 @@ module AsyncResultOptionOperators =
         AsyncResult.map2 Option.alternative asyncOption1 asyncOption2
 
 
-namespace FSharp.Prelude
+namespace Prelude.ErrorHandling
 
-open FSharp.Prelude.Operators.AsyncResultOption
+open Prelude.Extensions
+open Prelude.Operators.AsyncResultOption
 open System.Threading.Tasks
 
 type AsyncResultOption<'a, 'e> = AsyncResult<'a option, 'e>
 
 [<RequireQualifiedAccess>]
 module AsyncResultOption =
+    
     let singleton (value: 'a) : AsyncResultOption<'a, 'e> =
         (Option.singleton >> AsyncResult.singleton) value
 

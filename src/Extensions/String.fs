@@ -1,4 +1,4 @@
-namespace FSharp.Prelude
+namespace Prelude.Extensions
 
 [<RequireQualifiedAccess>]
 module String =

@@ -1,4 +1,4 @@
-﻿namespace FSharp.Prelude.Operators.Result
+﻿namespace Prelude.Operators.Result
 
 [<AutoOpen>]
 module ResultOperators =
@@ -17,9 +17,9 @@ module ResultOperators =
     let inline (>>=) (result: Result<'a, 'e>) (f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
 
-namespace FSharp.Prelude
+namespace Prelude.Extensions
 
-open FSharp.Prelude.Operators.Result
+open Prelude.Operators.Result
 
 [<RequireQualifiedAccess>]
 module Result =
@@ -90,6 +90,7 @@ module Result =
 module ResultCE =
 
     type ResultBuilder() =
+
         member this.Return(value: 'a) : Result<'a, 'e> = Result.singleton value
 
         member this.ReturnFrom(result: Result<'a, 'e>) : Result<'a, 'e> = result

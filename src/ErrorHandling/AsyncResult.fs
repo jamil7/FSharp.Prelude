@@ -1,6 +1,6 @@
-namespace FSharp.Prelude.Operators.AsyncResult
+namespace Prelude.Operators.AsyncResult
 
-open FSharp.Prelude
+open Prelude.Extensions
 
 [<AutoOpen>]
 module AsyncResultOperators =
@@ -34,9 +34,10 @@ module AsyncResultOperators =
             asyncResult
 
 
-namespace FSharp.Prelude
+namespace Prelude.ErrorHandling
 
-open FSharp.Prelude.Operators.AsyncResult
+open Prelude.Extensions
+open Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 
 type AsyncResult<'a, 'e> = Async<Result<'a, 'e>>
@@ -130,6 +131,9 @@ module AsyncResult =
         Async.singleton (Result.ofOption error option)
 
     let ofResult (result: Result<'a, 'e>) : AsyncResult<'a, 'e> = Async.singleton result
+
+    let ofChoice (choice: Choice<'a, 'e>) : AsyncResult<'a, 'e> =
+        Async.singleton (Result.ofChoice choice)
 
     let ofTask (lazyTask: unit -> Task<'a>) : AsyncResult<'a, exn> =
         async.Delay(lazyTask >> Async.AwaitTask)
