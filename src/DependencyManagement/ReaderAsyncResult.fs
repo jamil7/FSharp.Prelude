@@ -82,7 +82,7 @@ module ReaderAsyncResult =
 [<AutoOpen>]
 module ReaderAsyncResultCE =
 
-    type ReaderAsyncResultBuilder<'r, 'e>() =
+    type ReaderAsyncResultBuilder() =
 
         member _.Return(a: 'a) : ReaderAsyncResult<'r, 'a, 'e> = ReaderAsyncResult.singleton a
 
@@ -90,7 +90,11 @@ module ReaderAsyncResultCE =
 
         member _.Zero() : ReaderAsyncResult<'r, unit, 'e> = ReaderAsyncResult.singleton ()
 
-        member _.Bind(reader: ReaderAsyncResult<'r, 'a, 'e>, f: 'a -> ReaderAsyncResult<'r, 'a, 'e>) =
+        member _.Bind
+            (
+                reader: ReaderAsyncResult<'r, 'a, 'e>,
+                f: 'a -> ReaderAsyncResult<'r, 'b, 'e>
+            ) : ReaderAsyncResult<'r, 'b, 'e> =
             ReaderAsyncResult.bind f reader
 
         member _.Delay(f: unit -> ReaderAsyncResult<'r, 'a, 'e>) : ReaderAsyncResult<'r, 'a, 'e> =
@@ -150,12 +154,12 @@ module ReaderAsyncResultCE =
 
         member inline this.Source(rar: ReaderAsyncResult<'r, 'a, 'e>) : ReaderAsyncResult<'r, 'a, 'e> = rar
 
-    let readerAsyncResult<'r, 'e> = ReaderAsyncResultBuilder<'r, 'e>()
+    let readerAsyncResult = ReaderAsyncResultBuilder()
 
 [<AutoOpen>]
 module ReaderAsyncResultCEExtensions =
 
-    type ReaderAsyncResultBuilder<'r, 'e> with
+    type ReaderAsyncResultBuilder with
 
         member inline this.Source(sequence: #seq<'a>) : #seq<'a> = sequence
 

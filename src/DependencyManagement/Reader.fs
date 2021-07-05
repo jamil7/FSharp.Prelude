@@ -41,14 +41,14 @@ module Reader =
 [<AutoOpen>]
 module ReaderCE =
 
-    type ReaderBuilder<'r, 'e>() =
+    type ReaderBuilder() =
         member _.Return(a: 'a) : Reader<'r, 'a> = Reader.singleton a
 
         member _.ReturnFrom(a: Reader<'r, 'a>) : Reader<'r, 'a> = a
 
         member _.Zero() : Reader<'r, unit> = Reader.singleton ()
 
-        member _.Bind(reader: Reader<'r, 'a>, f: 'a -> Reader<'r, 'a>) = Reader.bind f reader
+        member _.Bind(reader: Reader<'r, 'a>, f: 'a -> Reader<'r, 'b>) : Reader<'r, 'b> = Reader.bind f reader
 
         member _.Delay(f: unit -> Reader<'r, 'a>) : Reader<'r, 'a> = Reader.bind f (Reader.singleton ())
 
@@ -91,4 +91,4 @@ module ReaderCE =
                 fun enumerator -> this.While(enumerator.MoveNext, this.Delay(fun () -> f enumerator.Current))
             )
 
-    let reader<'r, 'e> = ReaderBuilder<'r, 'e>()
+    let reader = ReaderBuilder()
