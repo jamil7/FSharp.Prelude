@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Main.fs" />
     <Compile Include="ErrorHandling\AsyncResultTests.fs" />
     <Compile Include="ErrorHandling\ResultTests.fs" />
-    <Folder Include="DependencyManagement" />
+    <Compile Include="DependencyManagement\ReaderAsyncResult.fs" />
+    <Compile Include="Main.fs" />
   </ItemGroup>
 
   <ItemGroup>
