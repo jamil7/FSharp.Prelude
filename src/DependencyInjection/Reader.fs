@@ -7,7 +7,7 @@ module ReaderOperators =
     let inline (<!>) (f: 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun e -> f (reader e)
 
     /// Infix apply operator.
-    let inline (<*>) (f: 'r -> 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun e -> (f e) (reader e)
+    let inline (<*>) (f: 'r -> 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun e -> f e (reader e)
 
     /// Infix bind operator.
     let inline (>>=) (reader: 'r -> 'a) (f: 'a -> 'r -> 'b) : 'r -> 'b = fun e -> f (reader e) e
