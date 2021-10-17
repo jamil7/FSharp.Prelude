@@ -48,8 +48,8 @@ module Result =
         | head :: tail ->
             folder head state
             |> function
-            | Ok _ as this -> traverser f folder this tail
-            | Error _ as this -> this
+                | Ok _ as this -> traverser f folder this tail
+                | Error _ as this -> this
 
     let mapM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
         let folder head tail =
@@ -84,7 +84,8 @@ module Result =
     let ofThrowable (f: 'a -> 'b) (a: 'a) : Result<'b, exn> =
         try
             Ok(f a)
-        with exn -> Error exn
+        with
+        | exn -> Error exn
 
 [<AutoOpen>]
 module ResultCE =
@@ -108,7 +109,8 @@ module ResultCE =
         member this.TryWith(f: unit -> Result<'a, 'e>, g: exn -> Result<'a, 'e>) : Result<'a, 'e> =
             try
                 this.Run f
-            with exn -> g exn
+            with
+            | exn -> g exn
 
         member this.TryFinally(f: unit -> Result<'a, 'e>, g: unit -> unit) : Result<'a, 'e> =
             try

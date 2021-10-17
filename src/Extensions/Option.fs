@@ -44,8 +44,8 @@ module Option =
         | head :: tail ->
             folder head state
             |> function
-            | Some _ as this -> traverser f folder this tail
-            | None as this -> this
+                | Some _ as this -> traverser f folder this tail
+                | None as this -> this
 
     let mapM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
         let folder head tail =
@@ -80,7 +80,8 @@ module Option =
     let ofThrowable (f: 'a -> 'b) (a: 'a) : 'b option =
         try
             Some(f a)
-        with _ -> None
+        with
+        | _ -> None
 
 [<AutoOpen>]
 module OptionCE =
@@ -104,7 +105,8 @@ module OptionCE =
         member this.TryWith(f: unit -> 'a option, g: exn -> 'a option) : 'a option =
             try
                 this.Run f
-            with exn -> g exn
+            with
+            | exn -> g exn
 
         member this.TryFinally(f: unit -> 'a option, g: unit -> unit) : 'a option =
             try

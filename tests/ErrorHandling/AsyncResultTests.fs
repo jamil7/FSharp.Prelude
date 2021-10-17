@@ -53,7 +53,7 @@ let sequenceTests =
                 Expect.equal actual expected "should equal"
             }
             testAsync "should prove example" {
-                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
 
                 let userIds = [ 1; 2; 3 ]
                 let expected = Ok userIds
@@ -68,7 +68,7 @@ let sequenceTests =
             testAsync "should execute async task in sequence" {
                 let mutable orderRun = []
 
-                let dummyAsync : int -> AsyncResult<int, string> =
+                let dummyAsync: int -> AsyncResult<int, string> =
                     fun i ->
                         AsyncResult.ofResult (Ok i)
                         |> AsyncResult.map
@@ -109,7 +109,7 @@ let sequenceATests =
                 Expect.equal actual expected "should equal"
             }
             testAsync "should prove example" {
-                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
 
                 let userIds = [ 1; 2; 3 ]
                 let expected = Ok userIds
@@ -124,7 +124,7 @@ let sequenceATests =
             testAsync "should execute async task in sequence" {
                 let mutable orderRun = []
 
-                let dummyAsync : int -> AsyncResult<int, string> =
+                let dummyAsync: int -> AsyncResult<int, string> =
                     fun i ->
                         AsyncResult.ofResult (Ok i)
                         |> AsyncResult.map
@@ -165,7 +165,7 @@ let sequenceAParallelTests =
                 Expect.equal actual expected "should equal"
             }
             testAsync "should prove example" {
-                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
 
                 let userIds = [ 1; 2; 3 ]
                 let expected = Ok userIds
@@ -180,7 +180,7 @@ let sequenceAParallelTests =
             testAsync "should execute async task in sequence" {
                 let mutable orderRun = []
 
-                let dummyAsync : int -> AsyncResult<int, string> =
+                let dummyAsync: int -> AsyncResult<int, string> =
                     fun i ->
                         AsyncResult.ofResult (Ok i)
                         |> AsyncResult.map
@@ -239,7 +239,7 @@ let traverseTests =
                 Expect.equal currentItem 2 "should equal"
             }
             testAsync "should prove example" {
-                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
 
                 let userIds = [ 1; 2; 3 ]
 
@@ -299,7 +299,7 @@ let traverseParallelTests =
                 Expect.equal currentItem 2 "should equal"
             }
             testAsync "should prove example" {
-                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
 
                 let userIds = [ 1; 2; 3 ]
 
@@ -359,7 +359,7 @@ let mapMTests =
                 Expect.equal currentItem 2 "should equal"
             }
             testAsync "should prove example" {
-                let fetchUser : int -> AsyncResult<int, 'err> = AsyncResult.singleton
+                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
 
                 let userIds = [ 1; 2; 3 ]
 
@@ -392,7 +392,7 @@ let taskTests =
                 [
                     testAsync "should convert from Task to AsyncResult" {
                         let source = new CancellationTokenSource()
-                        let input : (unit -> Task) = fun () -> Task.Delay(0, source.Token)
+                        let input: (unit -> Task) = fun () -> Task.Delay(0, source.Token)
 
                         let expectedValue = Ok()
 

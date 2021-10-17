@@ -17,7 +17,7 @@ module ResultReaderOperators =
         fun e -> Result.bind (fun a -> f a e) (rr e)
 
 
-namespace Prelude.DependencyManagement
+namespace Prelude.DependencyInjection
 
 open Prelude.Extensions
 open Prelude.Operators.ReaderResult
@@ -90,7 +90,8 @@ module ReaderResultCE =
             fun r ->
                 try
                     reader r
-                with e -> (f e) r
+                with
+                | e -> (f e) r
 
         member this.TryFinally(reader: ReaderResult<'r, 'a, 'e>, f: unit -> unit) : ReaderResult<'r, 'a, 'e> =
             fun r ->

@@ -13,7 +13,7 @@ module ReaderOperators =
     let inline (>>=) (reader: 'r -> 'a) (f: 'a -> 'r -> 'b) : 'r -> 'b = fun e -> f (reader e) e
 
 
-namespace Prelude.DependencyManagement
+namespace Prelude.DependencyInjection
 
 open Prelude.Operators.Reader
 
@@ -32,7 +32,7 @@ module Reader =
 
     let run (environment: 'r) (reader: Reader<'r, 'a>) : 'a = reader environment
 
-    let ask : Reader<'e, 'e> = id
+    let ask: Reader<'e, 'e> = id
 
     let asks (f: 'r -> 'a) : Reader<'r, 'a> = f <!> ask
 
@@ -59,7 +59,8 @@ module ReaderCE =
             fun r ->
                 try
                     reader r
-                with e -> (f e) r
+                with
+                | e -> (f e) r
 
         member this.TryFinally(reader: Reader<'r, 'a>, f: unit -> unit) : Reader<'r, 'a> =
             fun r ->

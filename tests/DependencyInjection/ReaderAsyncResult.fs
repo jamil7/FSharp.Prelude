@@ -2,7 +2,7 @@ module Prelude.Tests.DependencyManagement.ReaderAsyncResult
 
 open Expecto
 open Expecto.Flip
-open Prelude.DependencyManagement
+open Prelude.DependencyInjection
 open Prelude.Extensions
 
 type Env1 = { apiKey: string; db: string }
@@ -17,7 +17,7 @@ type SuperEnv =
 
 let env = { apiKey = "some_key"; db = "postgres" }
 
-let connectionString : ReaderAsyncResult<Env1, string, string> =
+let connectionString: ReaderAsyncResult<Env1, string, string> =
     readerAsyncResult {
         let! r = ReaderAsyncResult.ask
         return $"{r.apiKey} {r.db}"
@@ -29,7 +29,7 @@ let greeting name : ReaderAsyncResult<Env2, string, string> =
         return $"{r.greeting} {name}"
     }
 
-let connectiveGreeting : ReaderAsyncResult<SuperEnv, string, string> =
+let connectiveGreeting: ReaderAsyncResult<SuperEnv, string, string> =
     readerAsyncResult {
         let! r = ReaderAsyncResult.ask
 

@@ -5,7 +5,7 @@ open Prelude.Extensions
 
 [<AutoOpen>]
 module AsyncResultOptionOperators =
-    
+
     let (<!>) (f: 'a -> 'b) (asyncResultOption: AsyncResult<'a option, 'e>) : AsyncResult<'b option, 'e> =
         (Option.map >> AsyncResult.map) f asyncResultOption
 
@@ -53,7 +53,7 @@ type AsyncResultOption<'a, 'e> = AsyncResult<'a option, 'e>
 
 [<RequireQualifiedAccess>]
 module AsyncResultOption =
-    
+
     let singleton (value: 'a) : AsyncResultOption<'a, 'e> =
         (Option.singleton >> AsyncResult.singleton) value
 
