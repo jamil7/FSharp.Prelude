@@ -118,7 +118,7 @@ module ReaderAsyncResultCE =
                 with
                 | e -> (f e) r
 
-        member this.TryFinally(reader: ReaderAsyncResult<'r, 'a, 'e>, f: unit -> unit) : ReaderAsyncResult<'r, 'a, 'e> =
+        member _.TryFinally(reader: ReaderAsyncResult<'r, 'a, 'e>, f: unit -> unit) : ReaderAsyncResult<'r, 'a, 'e> =
             fun r ->
                 try
                     reader r
@@ -137,7 +137,7 @@ module ReaderAsyncResultCE =
                         disposable.Dispose()
             )
 
-        member this.BindReturn(reader: ReaderAsyncResult<'r, 'a, 'e>, f: 'a -> 'b) : ReaderAsyncResult<'r, 'b, 'e> =
+        member _.BindReturn(reader: ReaderAsyncResult<'r, 'a, 'e>, f: 'a -> 'b) : ReaderAsyncResult<'r, 'b, 'e> =
             ReaderAsyncResult.map f reader
 
         member this.While(f: unit -> bool, reader: ReaderAsyncResult<'r, unit, 'e>) : ReaderAsyncResult<'r, unit, 'e> =
@@ -153,7 +153,7 @@ module ReaderAsyncResultCE =
                 fun enumerator -> this.While(enumerator.MoveNext, this.Delay(fun () -> f enumerator.Current))
             )
 
-        member inline this.Source(rar: ReaderAsyncResult<'r, 'a, 'e>) : ReaderAsyncResult<'r, 'a, 'e> = rar
+        member inline _.Source(rar: ReaderAsyncResult<'r, 'a, 'e>) : ReaderAsyncResult<'r, 'a, 'e> = rar
 
     let readerAsyncResult = ReaderAsyncResultBuilder()
 

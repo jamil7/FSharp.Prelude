@@ -88,19 +88,19 @@ module OptionCE =
 
     type OptionBuilder() =
 
-        member this.Return(value) : 'a option = Option.singleton value
+        member _.Return(value) : 'a option = Option.singleton value
 
-        member this.ReturnFrom(option: 'a option) : 'a option = option
+        member _.ReturnFrom(option: 'a option) : 'a option = option
 
-        member this.Zero() : unit option = Option.singleton ()
+        member _.Zero() : unit option = Option.singleton ()
 
-        member this.Bind(option: 'a option, f: 'a -> 'b option) : 'b option = Option.bind f option
+        member _.Bind(option: 'a option, f: 'a -> 'b option) : 'b option = Option.bind f option
 
-        member this.Delay(f: unit -> 'a option) : unit -> 'a option = f
+        member _.Delay(f: unit -> 'a option) : unit -> 'a option = f
 
-        member this.Run(f: unit -> 'a option) : 'a option = f ()
+        member _.Run(f: unit -> 'a option) : 'a option = f ()
 
-        member this.Combine(option: 'a option, f: 'a -> 'b option) : 'b Option = Option.bind f option
+        member _.Combine(option: 'a option, f: 'a -> 'b option) : 'b Option = Option.bind f option
 
         member this.TryWith(f: unit -> 'a option, g: exn -> 'a option) : 'a option =
             try
@@ -129,8 +129,8 @@ module OptionCE =
                 this.Run g
                 |> Option.bind (fun () -> this.While(f, g))
 
-        member this.BindReturn(option: 'a option, f: 'a -> 'b) : 'b option = Option.map f option
+        member _.BindReturn(option: 'a option, f: 'a -> 'b) : 'b option = Option.map f option
 
-        member this.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
+        member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
 
     let option = OptionBuilder()

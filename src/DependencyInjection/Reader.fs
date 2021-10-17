@@ -62,7 +62,7 @@ module ReaderCE =
                 with
                 | e -> (f e) r
 
-        member this.TryFinally(reader: Reader<'r, 'a>, f: unit -> unit) : Reader<'r, 'a> =
+        member _.TryFinally(reader: Reader<'r, 'a>, f: unit -> unit) : Reader<'r, 'a> =
             fun r ->
                 try
                     reader r
@@ -77,7 +77,7 @@ module ReaderCE =
                         disposable.Dispose()
             )
 
-        member this.BindReturn(reader: Reader<'r, 'a>, f: 'a -> 'b) : Reader<'r, 'b> = Reader.map f reader
+        member _.BindReturn(reader: Reader<'r, 'a>, f: 'a -> 'b) : Reader<'r, 'b> = Reader.map f reader
 
         member this.While(f: unit -> bool, reader: Reader<'r, unit>) : Reader<'r, unit> =
             if not (f ()) then

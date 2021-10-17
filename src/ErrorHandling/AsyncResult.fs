@@ -146,34 +146,34 @@ module AsyncResult =
 [<AutoOpen>]
 module AsyncResultCE =
     type AsyncResultBuilder() =
-        member this.Return(value: 'a) : AsyncResult<'a, 'e> = AsyncResult.singleton value
+        member _.Return(value: 'a) : AsyncResult<'a, 'e> = AsyncResult.singleton value
 
-        member this.ReturnFrom(asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> = asyncResult
+        member _.ReturnFrom(asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> = asyncResult
 
-        member this.Zero() : AsyncResult<unit, 'e> = AsyncResult.singleton ()
+        member _.Zero() : AsyncResult<unit, 'e> = AsyncResult.singleton ()
 
-        member this.Bind(asyncResult: AsyncResult<'a, 'e>, f: 'a -> AsyncResult<'b, 'e>) : AsyncResult<'b, 'e> =
+        member _.Bind(asyncResult: AsyncResult<'a, 'e>, f: 'a -> AsyncResult<'b, 'e>) : AsyncResult<'b, 'e> =
             AsyncResult.bind f asyncResult
 
-        member this.Delay(f: unit -> AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> = async.Delay f
+        member _.Delay(f: unit -> AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> = async.Delay f
 
-        member this.Combine
+        member _.Combine
             (
                 unitAsyncResult: AsyncResult<unit, 'e>,
                 asyncResult: AsyncResult<'a, 'e>
             ) : AsyncResult<'a, 'e> =
             AsyncResult.bind (fun () -> asyncResult) unitAsyncResult
 
-        member this.TryWith(asyncResult: AsyncResult<'a, 'e>, f: exn -> AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> =
+        member _.TryWith(asyncResult: AsyncResult<'a, 'e>, f: exn -> AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> =
             async.TryWith(asyncResult, f)
 
-        member this.TryFinally(asyncResult: AsyncResult<'a, 'e>, f: unit -> unit) : AsyncResult<'a, 'e> =
+        member _.TryFinally(asyncResult: AsyncResult<'a, 'e>, f: unit -> unit) : AsyncResult<'a, 'e> =
             async.TryFinally(asyncResult, f)
 
-        member this.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncResult<'b, 'e>) : AsyncResult<'b, 'e> =
+        member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> AsyncResult<'b, 'e>) : AsyncResult<'b, 'e> =
             async.Using(disposable, f)
 
-        member this.BindReturn(asyncResult: AsyncResult<'a, 'e>, f: 'a -> 'b) : AsyncResult<'b, 'e> =
+        member _.BindReturn(asyncResult: AsyncResult<'a, 'e>, f: 'a -> 'b) : AsyncResult<'b, 'e> =
             AsyncResult.map f asyncResult
 
         member this.While(f: unit -> bool, asyncResult: AsyncResult<unit, 'e>) : AsyncResult<unit, 'e> =
@@ -183,25 +183,25 @@ module AsyncResultCE =
                 asyncResult
                 |> AsyncResult.bind (fun () -> this.While(f, asyncResult))
 
-        member this.MergeSources
+        member _.MergeSources
             (
                 asyncResult1: AsyncResult<'a, 'e>,
                 asyncResult2: AsyncResult<'b, 'e>
             ) : AsyncResult<'a * 'b, 'e> =
             AsyncResult.zipParallel asyncResult1 asyncResult2
 
-        member inline this.Source(asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> = asyncResult
+        member inline _.Source(asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'a, 'e> = asyncResult
 
     let asyncResult = AsyncResultBuilder()
 
 [<AutoOpen>]
 module AsyncResultCEExtensions =
     type AsyncResultBuilder with
-        member inline this.Source(asyncOp: Async<'a>) : AsyncResult<'a, exn> = AsyncResult.ofAsync asyncOp
+        member inline _.Source(asyncOp: Async<'a>) : AsyncResult<'a, exn> = AsyncResult.ofAsync asyncOp
 
-        member inline this.Source(result: Result<'a, 'e>) : AsyncResult<'a, 'e> = AsyncResult.ofResult result
+        member inline _.Source(result: Result<'a, 'e>) : AsyncResult<'a, 'e> = AsyncResult.ofResult result
 
-        member inline this.Source(task: Task<'a>) : AsyncResult<'a, exn> = AsyncResult.ofTask (fun () -> task)
+        member inline _.Source(task: Task<'a>) : AsyncResult<'a, exn> = AsyncResult.ofTask (fun () -> task)
 
-        member inline this.Source(unitTask: Task) : AsyncResult<unit, exn> =
+        member inline _.Source(unitTask: Task) : AsyncResult<unit, exn> =
             AsyncResult.ofUnitTask (fun () -> unitTask)
