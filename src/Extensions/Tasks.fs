@@ -56,5 +56,19 @@ module Task =
         FSharp.Control.Tasks.Affine.task { return! unitTask }
 
 [<AutoOpen>]
+module TaskExtensions =
+
+    type Task with
+
+        static member Catch(taskOp: Task<'a>) : Task<Choice<'a, exn>> =
+            FSharp.Control.Tasks.Affine.task {
+                try
+                    let! a = taskOp
+                    return Choice1Of2 a
+                with
+                | e -> return Choice2Of2 e
+            }
+
+[<AutoOpen>]
 module TaskCE =
     let task = FSharp.Control.Tasks.Affine.task
