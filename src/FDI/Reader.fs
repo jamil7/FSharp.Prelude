@@ -4,13 +4,13 @@ namespace Prelude.Operators.Reader
 module ReaderOperators =
 
     /// Infix map operator.
-    let inline (<!>) (f: 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun e -> f (reader e)
+    let inline (<!>) (f: 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun r -> f (reader r)
 
     /// Infix apply operator.
-    let inline (<*>) (f: 'r -> 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun e -> f e (reader e)
+    let inline (<*>) (f: 'r -> 'a -> 'b) (reader: 'r -> 'a) : 'r -> 'b = fun r -> f r (reader r)
 
     /// Infix bind operator.
-    let inline (>>=) (reader: 'r -> 'a) (f: 'a -> 'r -> 'b) : 'r -> 'b = fun e -> f (reader e) e
+    let inline (>>=) (reader: 'r -> 'a) (f: 'a -> 'r -> 'b) : 'r -> 'b = fun r -> f (reader r) r
 
 
 namespace Prelude.FDI
