@@ -24,6 +24,7 @@
         <Compile Include="ErrorHandling\AsyncResult.fs" />
         <Compile Include="ErrorHandling\AsyncOption.fs" />
         <Compile Include="ErrorHandling\AsyncResultOption.fs" />
+        <Compile Include="ErrorHandling\TaskResult.fs" />
         <Compile Include="Extensions\List.fs" />
         <Compile Include="FDI\Reader.fs" />
         <Compile Include="FDI\ReaderResult.fs" />

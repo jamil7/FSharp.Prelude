@@ -1,0 +1,123 @@
+namespace Prelude.Operators.TaskResult
+
+open System.Threading.Tasks
+open Prelude.Extensions
+
+[<AutoOpen>]
+module TaskResultOperators =
+    /// Infix map operator.
+    let inline (<!>) (f: 'a -> 'b) (taskResult: Task<Result<'a, 'e>>) : Task<Result<'b, 'e>> =
+        (Result.map >> Task.map) f taskResult
+
+    /// Infix apply operator.
+    let inline (<*>) (f: Task<Result<'a -> 'b, 'e>>) (taskResult: Task<Result<'a, 'e>>) : Task<Result<'b, 'e>> =
+        task {
+            let! f' = f
+            let! taskResult' = taskResult
+            return Result.apply f' taskResult'
+        }
+
+    /// Infix bind operator.
+    let inline (>>=) (taskResult: Task<Result<'a, 'e>>) (f: 'a -> Task<Result<'b, 'e>>) : Task<Result<'b, 'e>> =
+        Task.bind
+            (function
+            | Ok ok -> f ok
+            | Error error -> Task.singleton (Error error))
+            taskResult
+
+namespace Prelude.ErrorHandling
+
+open Prelude.Extensions
+open Prelude.Operators.TaskResult
+open System.Threading.Tasks
+
+type TaskResult<'a, 'e> = Task<Result<'a, 'e>>
+
+[<RequireQualifiedAccess>]
+module TaskResult =
+
+    /// Wraps a value in an TaskResult.
+    let singleton (value: 'a) : TaskResult<'a, 'e> =
+        (Result.singleton >> Task.singleton) value
+
+    let map (f: 'a -> 'b) (asyncResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> = f <!> asyncResult
+
+    let apply (f: TaskResult<'a -> 'b, 'e>) (asyncResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> = f <*> asyncResult
+
+    let bind (f: 'a -> TaskResult<'b, 'e>) (asyncResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> = asyncResult >>= f
+
+    let mapError (f: 'e1 -> 'e2) (asyncResult: TaskResult<'a, 'e1>) : TaskResult<'a, 'e2> =
+        Task.map (Result.mapError f) asyncResult
+
+    let bindError (f: 'e1 -> TaskResult<'a, 'e2>) (asyncResult: TaskResult<'a, 'e1>) : TaskResult<'a, 'e2> =
+        Task.bind
+            (function
+            | Ok ok -> singleton ok
+            | Error error -> f error)
+            asyncResult
+
+    let map2
+        (f: 'a -> 'b -> 'c)
+        (asyncResult1: TaskResult<'a, 'e>)
+        (asyncResult2: TaskResult<'b, 'e>)
+        : TaskResult<'c, 'e> =
+        f <!> asyncResult1 <*> asyncResult2
+
+    let andMap (asyncResult: TaskResult<'a, 'e>) (f: TaskResult<'a -> 'b, 'e>) : TaskResult<'b, 'e> =
+        map2 (|>) asyncResult f
+
+    let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (asyncResult: TaskResult<'a, 'e1>) : TaskResult<'b, 'e2> =
+        (map f >> mapError g) asyncResult
+
+    let rec private traverser
+        (f: 'a -> TaskResult<'b, 'e>)
+        (folder: 'a -> TaskResult<'b list, 'c> -> TaskResult<'b list, 'c>)
+        state
+        xs
+        : Task<Result<'b list, 'c>> =
+        match xs with
+        | [] -> List.rev <!> state
+        | head :: tail ->
+            task {
+                match! folder head state with
+                | Ok _ as this -> return! traverser f folder (Task.singleton this) tail
+                | Error _ as this -> return this
+            }
+
+    let mapM (f: 'a -> TaskResult<'b, 'e>) (asyncResults: 'a list) : TaskResult<'b list, 'e> =
+        let folder head tail =
+            f head
+            >>= fun head' ->
+                    tail
+                    >>= fun tail' -> singleton <| cons head' tail'
+
+        traverser f folder (singleton []) asyncResults
+
+    let traverse (f: 'a -> TaskResult<'b, 'e>) (asyncResults: 'a list) : TaskResult<'b list, 'e> =
+        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncResults
+
+    let sequence (asyncResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = mapM id asyncResults
+
+    let sequenceA (asyncResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = traverse id asyncResults
+
+    let zip (asyncResult1: TaskResult<'a, 'e>) (asyncResult2: TaskResult<'b, 'e>) : TaskResult<'a * 'b, 'e> =
+        (fun a b -> a, b) <!> asyncResult1
+        <*> asyncResult2
+
+    let ofAsync (asyncOp: Async<'a>) : TaskResult<'a, exn> =
+        asyncOp
+        |> Async.Catch
+        |> Async.StartAsTask
+        |> Task.map Result.ofChoice
+
+    let ofOption (error: 'e) (option: 'a option) : TaskResult<'a, 'e> =
+        Task.singleton (Result.ofOption error option)
+
+    let ofResult (result: Result<'a, 'e>) : TaskResult<'a, 'e> = Task.singleton result
+
+    let ofChoice (choice: Choice<'a, 'e>) : TaskResult<'a, 'e> = Task.singleton (Result.ofChoice choice)
+
+    let ofTask (taskOp: Task<'a>) : TaskResult<'a, exn> =
+        taskOp |> Task.Catch |> Task.map Result.ofChoice
+
+    let ofUnitTask (unitTask: Task) : TaskResult<unit, exn> = unitTask |> Task.ofUnitTask |> ofTask
