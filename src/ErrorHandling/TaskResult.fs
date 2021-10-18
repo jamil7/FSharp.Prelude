@@ -27,6 +27,7 @@ module TaskResultOperators =
 
 namespace Prelude.ErrorHandling
 
+open Ply
 open Prelude.Extensions
 open Prelude.Operators.TaskResult
 open System.Threading.Tasks
@@ -117,3 +118,65 @@ module TaskResult =
     let ofUnitTask (unitTask: Task) : TaskResult<unit, exn> = unitTask |> Task.ofUnitTask |> ofTask
 
     let ofAsync (asyncOp: Async<'a>) : TaskResult<'a, exn> = asyncOp |> Async.StartAsTask |> ofTask
+
+[<AutoOpen>]
+module AsyncResultCE =
+    type AsyncResultBuilder() =
+        member _.Return(value: 'a) : TaskResult<'a, 'e> = TaskResult.singleton value
+
+        member _.ReturnFrom(taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> = taskResult
+
+        member _.Zero() : TaskResult<unit, 'e> = TaskResult.singleton ()
+
+        member _.Bind(taskResult: TaskResult<'a, 'e>, f: 'a -> TaskResult<'b, 'e>) : TaskResult<'b, 'e> =
+            TaskResult.bind f taskResult
+
+        member _.Delay(f: unit -> Ply<Result<'a, 'e>>) : unit -> Ply<Result<'a, 'e>> = task.Delay f
+
+        member _.Run(f: unit -> Ply<'a>) : Task<'a> = task.Run f
+
+        member _.Combine(unitAsyncResult: TaskResult<unit, 'e>, taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> =
+            TaskResult.bind (fun () -> taskResult) unitAsyncResult
+
+        member _.TryWith(taskResult: unit -> Ply<Result<'a, 'e>>, f: exn -> Ply<Result<'a, 'e>>) : Ply<Result<'a, 'e>> =
+            task.TryWith(taskResult, f)
+
+        member _.TryFinally(taskResult: unit -> Ply<Result<'a, 'e>>, f: unit -> unit) : Ply<Result<'a, 'e>> =
+            task.TryFinally(taskResult, f)
+
+        member _.Using(disposable: 'a :> System.IDisposable, f: 'a -> Ply<Result<'b, 'e>>) : Ply<Result<'b, 'e>> =
+            task.Using(disposable, f)
+
+        member _.BindReturn(taskResult: TaskResult<'a, 'e>, f: 'a -> 'b) : TaskResult<'b, 'e> =
+            TaskResult.map f taskResult
+
+        member this.While(f: unit -> bool, taskResult: TaskResult<unit, 'e>) : TaskResult<unit, 'e> =
+            if not (f ()) then
+                this.Zero()
+            else
+                taskResult
+                |> TaskResult.bind (fun () -> this.While(f, taskResult))
+
+        member _.MergeSources
+            (
+                asyncResult1: TaskResult<'a, 'e>,
+                asyncResult2: TaskResult<'b, 'e>
+            ) : TaskResult<'a * 'b, 'e> =
+            TaskResult.zip asyncResult1 asyncResult2
+
+        member inline _.Source(taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> = taskResult
+        
+        member inline _.Source(taskResult: Ply<Result<'a, 'e>>) : TaskResult<'a, 'e> = task { return! taskResult }
+
+        member inline _.Source(taskResult: ValueTask<Result<'a, 'e>>) : TaskResult<'a, 'e> = task { return! taskResult }
+
+    let taskResult = AsyncResultBuilder()
+
+[<AutoOpen>]
+module AsyncResultCEExtensions =
+    type AsyncResultBuilder with
+        member inline _.Source(asyncOp: Async<'a>) : TaskResult<'a, exn> = TaskResult.ofAsync asyncOp
+
+        member inline _.Source(asyncResult: Async<Result<'a, 'e>>) : TaskResult<'a, 'e> = Async.StartAsTask asyncResult
+
+        member inline _.Source(result: Result<'a, 'e>) : TaskResult<'a, 'e> = TaskResult.ofResult result
