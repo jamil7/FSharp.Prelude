@@ -1,4 +1,4 @@
-namespace FSharp.Prelude.Operators.Option
+namespace Prelude.Operators.Option
 
 [<AutoOpen>]
 module OptionOperators =
@@ -23,9 +23,9 @@ module OptionOperators =
         | left, _ -> left
 
 
-namespace FSharp.Prelude
+namespace Prelude.Extensions
 
-open FSharp.Prelude.Operators.Option
+open Prelude.Operators.Option
 
 [<RequireQualifiedAccess>]
 module Option =
@@ -44,8 +44,8 @@ module Option =
         | head :: tail ->
             folder head state
             |> function
-            | Some _ as this -> traverser f folder this tail
-            | None as this -> this
+                | Some _ as this -> traverser f folder this tail
+                | None as this -> this
 
     let mapM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
         let folder head tail =
@@ -80,30 +80,33 @@ module Option =
     let ofThrowable (f: 'a -> 'b) (a: 'a) : 'b option =
         try
             Some(f a)
-        with _ -> None
+        with
+        | _ -> None
 
 [<AutoOpen>]
 module OptionCE =
 
     type OptionBuilder() =
-        member this.Return(value) : 'a option = Option.singleton value
 
-        member this.ReturnFrom(option: 'a option) : 'a option = option
+        member _.Return(value) : 'a option = Option.singleton value
 
-        member this.Zero() : unit option = Option.singleton ()
+        member _.ReturnFrom(option: 'a option) : 'a option = option
 
-        member this.Bind(option: 'a option, f: 'a -> 'b option) : 'b option = Option.bind f option
+        member _.Zero() : unit option = Option.singleton ()
 
-        member this.Delay(f: unit -> 'a option) : unit -> 'a option = f
+        member _.Bind(option: 'a option, f: 'a -> 'b option) : 'b option = Option.bind f option
 
-        member this.Run(f: unit -> 'a option) : 'a option = f ()
+        member _.Delay(f: unit -> 'a option) : unit -> 'a option = f
 
-        member this.Combine(option: 'a option, f: 'a -> 'b option) : 'b Option = Option.bind f option
+        member _.Run(f: unit -> 'a option) : 'a option = f ()
+
+        member _.Combine(option: 'a option, f: 'a -> 'b option) : 'b Option = Option.bind f option
 
         member this.TryWith(f: unit -> 'a option, g: exn -> 'a option) : 'a option =
             try
                 this.Run f
-            with exn -> g exn
+            with
+            | exn -> g exn
 
         member this.TryFinally(f: unit -> 'a option, g: unit -> unit) : 'a option =
             try
@@ -114,9 +117,9 @@ module OptionCE =
         member this.Using(disposable: 'a :> System.IDisposable, f: 'a -> 'a option) : 'a option =
             this.TryFinally(
                 (fun () -> f disposable),
-                (fun () ->
+                fun () ->
                     if not (obj.ReferenceEquals(disposable, null)) then
-                        disposable.Dispose())
+                        disposable.Dispose()
             )
 
         member this.While(f: unit -> bool, g: unit -> Option<unit>) : Option<unit> =
@@ -126,8 +129,8 @@ module OptionCE =
                 this.Run g
                 |> Option.bind (fun () -> this.While(f, g))
 
-        member this.BindReturn(option: 'a option, f: 'a -> 'b) : 'b option = Option.map f option
+        member _.BindReturn(option: 'a option, f: 'a -> 'b) : 'b option = Option.map f option
 
-        member this.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
+        member _.MergeSources(option1: 'a option, option2: 'b option) = Option.zip option1 option2
 
     let option = OptionBuilder()

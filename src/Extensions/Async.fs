@@ -1,4 +1,4 @@
-namespace FSharp.Prelude.Operators.Async
+namespace Prelude.Operators.Async
 
 [<AutoOpen>]
 module AsyncOperators =
@@ -28,12 +28,12 @@ module AsyncOperators =
     let inline (>>=) (asyncOp: Async<'a>) (f: 'a -> Async<'b>) : Async<'b> = async.Bind(asyncOp, f)
 
 
-namespace FSharp.Prelude
+namespace Prelude.Extensions
+
+open Prelude.Operators.Async
 
 [<RequireQualifiedAccess>]
 module Async =
-
-    open FSharp.Prelude.Operators.Async
 
     /// Wraps a value in an Async.
     let singleton (value: 'a) : Async<'a> = async.Return value
@@ -63,6 +63,7 @@ module AsyncExtension =
     open System.Threading.Tasks
 
     type Async with
+
         /// A replacement for Async.AwaitTask that throws inner exceptions if they exist.
         static member AwaitTaskWithInnerException(task: Task<'T>) : Async<'T> =
             Async.FromContinuations
@@ -104,12 +105,12 @@ module AsyncCEExtensions =
     open System.Threading.Tasks
 
     type FSharp.Control.AsyncBuilder with
-        member this.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> = Async.bind f (Async.AwaitTask task)
 
-        member this.Bind(actionTask: Task, f: unit -> Async<unit>) : Async<unit> =
+        member _.Bind(task: Task<'a>, f: 'a -> Async<'b>) : Async<'b> = Async.bind f (Async.AwaitTask task)
+
+        member _.Bind(actionTask: Task, f: unit -> Async<unit>) : Async<unit> =
             Async.bind f (Async.AwaitTask actionTask)
 
-        member this.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
+        member _.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
 
-        member this.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> =
-            Async.zipParallel async1 async2
+        member _.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> = Async.zipParallel async1 async2

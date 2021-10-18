@@ -1,4 +1,4 @@
-﻿namespace FSharp.Prelude.Operators.Result
+﻿namespace Prelude.Operators.Result
 
 [<AutoOpen>]
 module ResultOperators =
@@ -17,9 +17,9 @@ module ResultOperators =
     let inline (>>=) (result: Result<'a, 'e>) (f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
 
-namespace FSharp.Prelude
+namespace Prelude.Extensions
 
-open FSharp.Prelude.Operators.Result
+open Prelude.Operators.Result
 
 [<RequireQualifiedAccess>]
 module Result =
@@ -48,8 +48,8 @@ module Result =
         | head :: tail ->
             folder head state
             |> function
-            | Ok _ as this -> traverser f folder this tail
-            | Error _ as this -> this
+                | Ok _ as this -> traverser f folder this tail
+                | Error _ as this -> this
 
     let mapM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
         let folder head tail =
@@ -84,30 +84,33 @@ module Result =
     let ofThrowable (f: 'a -> 'b) (a: 'a) : Result<'b, exn> =
         try
             Ok(f a)
-        with exn -> Error exn
+        with
+        | exn -> Error exn
 
 [<AutoOpen>]
 module ResultCE =
 
     type ResultBuilder() =
-        member this.Return(value: 'a) : Result<'a, 'e> = Result.singleton value
 
-        member this.ReturnFrom(result: Result<'a, 'e>) : Result<'a, 'e> = result
+        member _.Return(value: 'a) : Result<'a, 'e> = Result.singleton value
 
-        member this.Zero() : Result<unit, 'e> = Result.singleton ()
+        member _.ReturnFrom(result: Result<'a, 'e>) : Result<'a, 'e> = result
 
-        member this.Bind(result: Result<'a, 'e>, f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
+        member _.Zero() : Result<unit, 'e> = Result.singleton ()
 
-        member this.Delay(f: unit -> Result<'a, 'e>) : unit -> Result<'a, 'e> = f
+        member _.Bind(result: Result<'a, 'e>, f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
-        member this.Run(f: unit -> Result<'a, 'e>) : Result<'a, 'e> = f ()
+        member _.Delay(f: unit -> Result<'a, 'e>) : unit -> Result<'a, 'e> = f
 
-        member this.Combine(result: Result<unit, 'e>, f: unit -> Result<'a, 'e>) : Result<'a, 'e> = Result.bind f result
+        member _.Run(f: unit -> Result<'a, 'e>) : Result<'a, 'e> = f ()
+
+        member _.Combine(result: Result<unit, 'e>, f: unit -> Result<'a, 'e>) : Result<'a, 'e> = Result.bind f result
 
         member this.TryWith(f: unit -> Result<'a, 'e>, g: exn -> Result<'a, 'e>) : Result<'a, 'e> =
             try
                 this.Run f
-            with exn -> g exn
+            with
+            | exn -> g exn
 
         member this.TryFinally(f: unit -> Result<'a, 'e>, g: unit -> unit) : Result<'a, 'e> =
             try
@@ -130,9 +133,9 @@ module ResultCE =
                 this.Run g
                 |> Result.bind (fun () -> this.While(f, g))
 
-        member this.BindReturn(result: Result<'a, 'e>, f: 'a -> 'b) : Result<'b, 'e> = Result.map f result
+        member _.BindReturn(result: Result<'a, 'e>, f: 'a -> 'b) : Result<'b, 'e> = Result.map f result
 
-        member this.MergeSources(result1: Result<'a, 'e>, result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
+        member _.MergeSources(result1: Result<'a, 'e>, result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
             Result.zip result1 result2
 
     let result = ResultBuilder()

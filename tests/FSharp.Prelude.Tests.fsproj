@@ -1,25 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <GenerateProgramFile>false</GenerateProgramFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <GenerateProgramFile>false</GenerateProgramFile>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="AsyncResultTests.fs" />
-    <Compile Include="ResultTests.fs" />
-    <Compile Include="Main.fs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="ErrorHandling\AsyncResultTests.fs"/>
+        <Compile Include="ErrorHandling\ResultTests.fs"/>
+        <Compile Include="FDI\ReaderAsyncResult.fs"/>
+        <Compile Include="Main.fs"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0 " />
-    <PackageReference Include="Expecto" Version="9.0.2" />
-    <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Update="FSharp.Core" Version="5.0.0 "/>
+        <PackageReference Include="Expecto" Version="9.0.2"/>
+        <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\src\FSharp.Prelude.fsproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\src\FSharp.Prelude.fsproj"/>
+    </ItemGroup>
 </Project>
