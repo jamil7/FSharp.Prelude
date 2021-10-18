@@ -14,14 +14,14 @@ module ResultAsyncReaderOperators =
         (f: 'r -> Async<Result<'a -> 'b, 'e>>)
         (rar: 'r -> Async<Result<'a, 'e>>)
         : 'r -> Async<Result<'b, 'e>> =
-        fun e -> AsyncResult.apply (f e) (rar e)
+        fun r -> AsyncResult.apply (f r) (rar r)
 
     /// Infix bind operator.
     let inline (>>=)
         (rar: 'r -> Async<Result<'a, 'e>>)
         (f: 'a -> 'r -> Async<Result<'b, 'e>>)
         : 'r -> Async<Result<'b, 'e>> =
-        fun e -> AsyncResult.bind (fun a -> f a e) (rar e)
+        fun r -> AsyncResult.bind (fun a -> f a r) (rar r)
 
 namespace Prelude.FDI
 
@@ -34,7 +34,7 @@ type ReaderAsyncResult<'r, 'a, 'err> = 'r -> AsyncResult<'a, 'err>
 [<RequireQualifiedAccess>]
 module ReaderAsyncResult =
 
-    let singleton (x: 'a) : ReaderAsyncResult<'r, 'a, 'e> = fun _ -> AsyncResult.singleton x
+    let singleton (value: 'a) : ReaderAsyncResult<'r, 'a, 'e> = fun _ -> AsyncResult.singleton value
 
     let map (f: 'a -> 'b) (rar: ReaderAsyncResult<'r, 'a, 'e>) : ReaderAsyncResult<'r, 'b, 'e> = f <!> rar
 

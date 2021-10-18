@@ -22,7 +22,7 @@ type Reader<'r, 'a> = 'r -> 'a
 [<RequireQualifiedAccess>]
 module Reader =
 
-    let singleton (x: 'a) : Reader<'r, 'a> = fun _ -> x
+    let singleton (value: 'a) : Reader<'r, 'a> = fun _ -> value
 
     let map (f: 'a -> 'b) (reader: Reader<'r, 'a>) : Reader<'r, 'b> = f <!> reader
 

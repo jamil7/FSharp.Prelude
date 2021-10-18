@@ -10,11 +10,11 @@ module ResultReaderOperators =
 
     /// Infix apply operator.
     let inline (<*>) (f: 'r -> Result<'a -> 'b, 'e>) (rr: 'r -> Result<'a, 'e>) : 'r -> Result<'b, 'e> =
-        fun e -> Result.apply (f e) (rr e)
+        fun r -> Result.apply (f r) (rr r)
 
     /// Infix bind operator.
     let inline (>>=) (rr: 'r -> Result<'a, 'e>) (f: 'a -> 'r -> Result<'b, 'e>) : 'r -> Result<'b, 'e> =
-        fun e -> Result.bind (fun a -> f a e) (rr e)
+        fun r -> Result.bind (fun a -> f a r) (rr r)
 
 
 namespace Prelude.FDI
@@ -27,7 +27,7 @@ type ReaderResult<'r, 'a, 'e> = 'r -> Result<'a, 'e>
 [<RequireQualifiedAccess>]
 module ReaderResult =
 
-    let singleton (x: 'a) : ReaderResult<'r, 'a, 'e> = fun _ -> Result.singleton x
+    let singleton (value: 'a) : ReaderResult<'r, 'a, 'e> = fun _ -> Result.singleton value
 
     let map (f: 'a -> 'b) (rr: ReaderResult<'r, 'a, 'e>) : ReaderResult<'r, 'b, 'e> = f <!> rr
 
