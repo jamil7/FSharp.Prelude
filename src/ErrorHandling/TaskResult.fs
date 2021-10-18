@@ -120,7 +120,7 @@ module TaskResult =
     let ofAsync (asyncOp: Async<'a>) : TaskResult<'a, exn> = asyncOp |> Async.StartAsTask |> ofTask
 
 [<AutoOpen>]
-module AsyncResultCE =
+module TaskResultCE =
     type AsyncResultBuilder() =
         member _.Return(value: 'a) : TaskResult<'a, 'e> = TaskResult.singleton value
 
@@ -165,7 +165,7 @@ module AsyncResultCE =
             TaskResult.zip asyncResult1 asyncResult2
 
         member inline _.Source(taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> = taskResult
-        
+
         member inline _.Source(taskResult: Ply<Result<'a, 'e>>) : TaskResult<'a, 'e> = task { return! taskResult }
 
         member inline _.Source(taskResult: ValueTask<Result<'a, 'e>>) : TaskResult<'a, 'e> = task { return! taskResult }
@@ -173,7 +173,7 @@ module AsyncResultCE =
     let taskResult = AsyncResultBuilder()
 
 [<AutoOpen>]
-module AsyncResultCEExtensions =
+module TaskResultCEExtensions =
     type AsyncResultBuilder with
         member inline _.Source(asyncOp: Async<'a>) : TaskResult<'a, exn> = TaskResult.ofAsync asyncOp
 
