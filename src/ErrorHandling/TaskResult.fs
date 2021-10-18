@@ -104,12 +104,6 @@ module TaskResult =
         (fun a b -> a, b) <!> asyncResult1
         <*> asyncResult2
 
-    let ofAsync (asyncOp: Async<'a>) : TaskResult<'a, exn> =
-        asyncOp
-        |> Async.Catch
-        |> Async.StartAsTask
-        |> Task.map Result.ofChoice
-
     let ofOption (error: 'e) (option: 'a option) : TaskResult<'a, 'e> =
         Task.singleton (Result.ofOption error option)
 
@@ -121,3 +115,5 @@ module TaskResult =
         taskOp |> Task.Catch |> Task.map Result.ofChoice
 
     let ofUnitTask (unitTask: Task) : TaskResult<unit, exn> = unitTask |> Task.ofUnitTask |> ofTask
+
+    let ofAsync (asyncOp: Async<'a>) : TaskResult<'a, exn> = asyncOp |> Async.StartAsTask |> ofTask
