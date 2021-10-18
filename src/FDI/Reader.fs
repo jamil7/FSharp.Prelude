@@ -17,7 +17,7 @@ namespace Prelude.FDI
 
 open Prelude.Operators.Reader
 
-type Reader<'e, 'a> = 'e -> 'a
+type Reader<'r, 'a> = 'r -> 'a
 
 [<RequireQualifiedAccess>]
 module Reader =

@@ -29,7 +29,7 @@ open Prelude.ErrorHandling
 open Prelude.Operators.ReaderResult
 open System.Threading.Tasks
 
-type ReaderAsyncResult<'env, 'a, 'err> = 'env -> AsyncResult<'a, 'err>
+type ReaderAsyncResult<'r, 'a, 'err> = 'r -> AsyncResult<'a, 'err>
 
 [<RequireQualifiedAccess>]
 module ReaderAsyncResult =
