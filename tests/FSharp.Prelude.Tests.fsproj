@@ -7,20 +7,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="ErrorHandling\AsyncResultTests.fs"/>
-        <Compile Include="ErrorHandling\ResultTests.fs"/>
-        <Compile Include="DependencyInjection\ReaderAsyncResult.fs"/>
-        <Compile Include="Main.fs"/>
+        <Compile Include="ErrorHandling\AsyncResultTests.fs" />
+        <Compile Include="ErrorHandling\ResultTests.fs" />
+        <Compile Include="FDI\ReaderAsyncResult.fs" />
+        <Compile Include="Main.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Update="FSharp.Core" Version="5.0.0 "/>
-        <PackageReference Include="Expecto" Version="9.0.2"/>
-        <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4"/>
+        <PackageReference Update="FSharp.Core" Version="5.0.0 " />
+        <PackageReference Include="Expecto" Version="9.0.2" />
+        <PackageReference Include="YoloDev.Expecto.TestSdk" Version="0.11.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\FSharp.Prelude.fsproj"/>
+        <ProjectReference Include="..\src\FSharp.Prelude.fsproj" />
     </ItemGroup>
 </Project>

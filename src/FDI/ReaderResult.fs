@@ -17,7 +17,7 @@ module ResultReaderOperators =
         fun e -> Result.bind (fun a -> f a e) (rr e)
 
 
-namespace Prelude.DependencyInjection
+namespace Prelude.FDI
 
 open Prelude.Extensions
 open Prelude.Operators.ReaderResult

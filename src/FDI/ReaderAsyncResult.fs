@@ -23,7 +23,7 @@ module ResultAsyncReaderOperators =
         : 'r -> Async<Result<'b, 'e>> =
         fun e -> AsyncResult.bind (fun a -> f a e) (rar e)
 
-namespace Prelude.DependencyInjection
+namespace Prelude.FDI
 
 open Prelude.ErrorHandling
 open Prelude.Operators.ReaderResult
