@@ -63,7 +63,12 @@ module AsyncOption =
 
     let andMap (asyncOption: AsyncOption<'a>) (f: AsyncOption<'a -> 'b>) : AsyncOption<'b> = map2 (|>) asyncOption f
 
-    let rec private traverser (f: 'a -> AsyncOption<'b>) folder state xs =
+    let rec private traverser
+        (f: 'a -> AsyncOption<'b>)
+        (folder: 'a -> AsyncOption<'b list> -> AsyncOption<'b list>)
+        state
+        xs
+        =
         match xs with
         | [] -> List.rev <!> state
         | head :: tail ->

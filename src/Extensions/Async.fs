@@ -106,8 +106,6 @@ module AsyncExtension =
 [<AutoOpen>]
 module AsyncCEExtensions =
 
-    open System.Threading.Tasks
-
     type FSharp.Control.AsyncBuilder with
 
         member _.BindReturn(async: Async<'a>, f: 'a -> 'b) : Async<'b> = Async.map f async
@@ -115,6 +113,14 @@ module AsyncCEExtensions =
         member _.MergeSources(async1: Async<'a>, async2: Async<'b>) : Async<'a * 'b> = Async.zipParallel async1 async2
 
         member inline _.Source(asyncOp: Async<'a>) : Async<'a> = asyncOp
+
+
+[<AutoOpen>]
+module AsyncCEExtensions2 =
+
+    open System.Threading.Tasks
+
+    type FSharp.Control.AsyncBuilder with
 
         member inline _.Source(task: Task<'a>) : Async<'a> = Async.AwaitTask task
 
