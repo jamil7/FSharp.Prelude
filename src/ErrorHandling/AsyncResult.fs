@@ -82,7 +82,12 @@ module AsyncResult =
     let bimap (f: 'a -> 'b) (g: 'e1 -> 'e2) (asyncResult: AsyncResult<'a, 'e1>) : AsyncResult<'b, 'e2> =
         (map f >> mapError g) asyncResult
 
-    let rec private traverser (f: 'a -> AsyncResult<'b, 'e>) folder state xs =
+    let rec private traverser
+        (f: 'a -> AsyncResult<'b, 'e>)
+        (folder: 'a -> AsyncResult<'b list, 'e> -> AsyncResult<'b list, 'e>)
+        state
+        xs
+        =
         match xs with
         | [] -> List.rev <!> state
         | head :: tail ->
