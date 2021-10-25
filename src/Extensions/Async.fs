@@ -1,5 +1,7 @@
 namespace Prelude.Operators.Async
 
+open System.Threading.Tasks
+
 [<AutoOpen>]
 module AsyncOperators =
 
@@ -17,8 +19,10 @@ module AsyncOperators =
     /// Infix parallel apply operator.
     let inline (<&>) (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> =
         async {
+            let! token = Async.CancellationToken
             let! runF = Async.StartChildAsTask f
             let! runAsyncOp = Async.StartChildAsTask asyncOp
+            do Task.WaitAll([| runF; runAsyncOp |], cancellationToken = token)
             let! f' = Async.AwaitTask runF
             let! asyncOpRes = Async.AwaitTask runAsyncOp
             return f' asyncOpRes
