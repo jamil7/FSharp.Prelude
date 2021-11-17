@@ -1,14 +1,31 @@
 [![NuGet Badge](https://buildstats.info/nuget/FSharp.Prelude?includePreReleases=true)](https://www.nuget.org/packages/FSharp.Prelude)
 
-
 # FSharp.Prelude
 
-### Prelude 
-noun
+This library is a collection of some useful extensions, aliases, and functions for F#.
 
-  
-  1. an action or event serving as an introduction to something more important.
+Here's an overview of what's inside:
 
-  2. an introductory piece of music, most commonly an orchestral opening to an act of an opera, the first movement of a suite, or a piece preceding a fugue.
+- Error handling
+    - AsyncOption
+    - AsyncResult
+    - AsyncResultOption
 
-This library is a collection of some useful extensions for F#. Mostly for error handling, and Async operations.
+
+- Extensions
+    - Async
+    - List
+    - Option
+    - Result
+    - String
+
+
+- FDI (Functional Dependency Injection)
+    - Reader
+    - ReaderAsyncResult
+    - ReaderResult
+
+## How does it compare to other libs?
+
+Coming soon. 
+
