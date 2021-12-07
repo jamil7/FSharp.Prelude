@@ -13,24 +13,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Internal.fs"/>
-        <Compile Include="Extensions\Prelude.fs"/>
-        <Compile Include="Extensions\Option.fs"/>
-        <Compile Include="Extensions\Async.fs"/>
-        <Compile Include="Extensions\Result.fs"/>
-        <Compile Include="Extensions\String.fs"/>
-        <Compile Include="ErrorHandling\AsyncResult.fs"/>
-        <Compile Include="ErrorHandling\AsyncOption.fs"/>
-        <Compile Include="ErrorHandling\AsyncResultOption.fs"/>
-        <Compile Include="Extensions\List.fs"/>
-        <Compile Include="FDI\Reader.fs"/>
-        <Compile Include="FDI\ReaderResult.fs"/>
-        <Compile Include="FDI\ReaderAsyncResult.fs"/>
+        <Compile Include="Internal.fs" />
+        <Compile Include="Extensions\Prelude.fs" />
+        <Compile Include="Extensions\Option.fs" />
+        <Compile Include="Extensions\Async.fs" />
+        <Compile Include="Extensions\Task.fs" />
+        <Compile Include="Extensions\Result.fs" />
+        <Compile Include="Extensions\String.fs" />
+        <Compile Include="ErrorHandling\AsyncResult.fs" />
+        <Compile Include="ErrorHandling\AsyncOption.fs" />
+        <Compile Include="ErrorHandling\AsyncResultOption.fs" />
+        <Compile Include="Extensions\List.fs" />
+        <Compile Include="FDI\Reader.fs" />
+        <Compile Include="FDI\ReaderResult.fs" />
+        <Compile Include="FDI\ReaderAsyncResult.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FSharp.Core" Version="6.0.*"/>
-        <PackageReference Update="FSharp.Core" Version="6.0.*"/>
+        <PackageReference Include="FSharp.Core" Version="6.0.*" />
+        <PackageReference Update="FSharp.Core" Version="6.0.*" />
     </ItemGroup>
 
 </Project>
