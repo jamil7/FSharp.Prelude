@@ -18,14 +18,6 @@ module TaskResultOperators =
             return Result.apply f' taskResult'
         }
 
-    /// Infix parallel apply operator.
-    let inline (<&>) (f: Task<Result<'a -> 'b, 'e>>) (taskResult: Task<Result<'a, 'e>>) : Task<Result<'b, 'e>> =
-        task {
-            let! f' = f
-            and! taskResult' = taskResult
-            return Result.apply f' taskResult'
-        }
-
     /// Infix bind operator.
     let inline (>>=) (taskResult: Task<Result<'a, 'e>>) (f: 'a -> Task<Result<'b, 'e>>) : Task<Result<'b, 'e>> =
         Task.bind
@@ -51,9 +43,6 @@ module TaskResult =
     let map (f: 'a -> 'b) (taskResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> = f <!> taskResult
 
     let apply (f: TaskResult<'a -> 'b, 'e>) (taskResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> = f <*> taskResult
-
-    let applyParallel (f: TaskResult<'a -> 'b, 'e>) (taskResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> =
-        f <&> taskResult
 
     let bind (f: 'a -> TaskResult<'b, 'e>) (taskResult: TaskResult<'a, 'e>) : TaskResult<'b, 'e> = taskResult >>= f
 
@@ -107,20 +96,11 @@ module TaskResult =
     let traverse (f: 'a -> TaskResult<'b, 'e>) (taskResults: 'a list) : TaskResult<'b list, 'e> =
         traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) taskResults
 
-    let traverseParallel (f: 'a -> TaskResult<'b, 'e>) (taskResults: 'a list) : TaskResult<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) taskResults
-
     let sequence (taskResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = mapM id taskResults
 
     let sequenceA (taskResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = traverse id taskResults
 
-    let sequenceAParallel (taskResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> =
-        traverseParallel id taskResults
-
     let zip (taskResult1: TaskResult<'a, 'e>) (taskResult2: TaskResult<'b, 'e>) : TaskResult<'a * 'b, 'e> =
-        (fun a b -> a, b) <!> taskResult1 <*> taskResult2
-
-    let zipParallel (taskResult1: TaskResult<'a, 'e>) (taskResult2: TaskResult<'b, 'e>) : TaskResult<'a * 'b, 'e> =
         (fun a b -> a, b) <!> taskResult1 <*> taskResult2
 
     let ofAsync (asyncOp: Async<'a>) : TaskResult<'a, exn> =
@@ -143,41 +123,3 @@ module TaskResult =
     let ofUnitTask (lazyUnitTask: unit -> Task) : TaskResult<unit, exn> =
         async.Delay(lazyUnitTask >> Async.AwaitTask)
         |> ofAsync
-
-[<AutoOpen>]
-module TaskResultCE =
-    type TaskResultBuilder() =
-        member _.Return(value: 'a) : TaskResult<'a, 'e> = TaskResult.singleton value
-
-        member _.ReturnFrom(taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> = taskResult
-
-        member _.Zero() : TaskResult<unit, 'e> = TaskResult.singleton ()
-
-        member _.Bind(taskResult: TaskResult<'a, 'e>, f: 'a -> TaskResult<'b, 'e>) : TaskResult<'b, 'e> =
-            TaskResult.bind f taskResult
-
-        member _.Delay(f: unit -> TaskResult<'a, 'e>) : TaskResult<'a, 'e> = Task.bind f (Task.singleton ())
-
-        member _.Combine(unitTaskResult: TaskResult<unit, 'e>, taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> =
-            TaskResult.bind (fun () -> taskResult) unitTaskResult
-
-        member _.BindReturn(taskResult: TaskResult<'a, 'e>, f: 'a -> 'b) : TaskResult<'b, 'e> =
-            TaskResult.map f taskResult
-
-        member this.While(f: unit -> bool, taskResult: TaskResult<unit, 'e>) : TaskResult<unit, 'e> =
-            if not (f ()) then
-                this.Zero()
-            else
-                taskResult
-                |> TaskResult.bind (fun () -> this.While(f, taskResult))
-
-        member _.MergeSources
-            (
-                taskResult1: TaskResult<'a, 'e>,
-                taskResult2: TaskResult<'b, 'e>
-            ) : TaskResult<'a * 'b, 'e> =
-            TaskResult.zipParallel taskResult1 taskResult2
-
-        member inline _.Source(taskResult: TaskResult<'a, 'e>) : TaskResult<'a, 'e> = taskResult
-
-    let taskResult = TaskResultBuilder()
