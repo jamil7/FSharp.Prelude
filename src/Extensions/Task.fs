@@ -20,6 +20,15 @@ module TaskOperators =
             return f' taskOp'
         }
 
+    let inline (<&>) (f: Task<'a -> 'b>) (taskOp: Task<'a>) : Task<'b> =
+        task {
+            let! token = Async.CancellationToken
+            let! f' = f
+            let! taskOp' = taskOp
+            do Task.WaitAll([| f; taskOp |], cancellationToken = token)
+            return f' taskOp'
+        }
+
     /// Infix bind operator.
     let inline (>>=) (taskOp: Task<'a>) (f: 'a -> Task<'b>) : Task<'b> =
         task {
@@ -42,6 +51,8 @@ module Task =
 
     let apply (f: Task<'a -> 'b>) (taskOp: Task<'a>) : Task<'b> = f <*> taskOp
 
+    let applyParallel (f: Task<'a -> 'b>) (taskOp: Task<'a>) : Task<'b> = f <&> taskOp
+
     let bind (f: 'a -> Task<'b>) (taskOp: Task<'a>) : Task<'b> = taskOp >>= f
 
     let map2 (f: 'a -> 'b -> 'c) (taskOp1: Task<'a>) (taskOp2: Task<'b>) : Task<'c> = f <!> taskOp1 <*> taskOp2
@@ -50,3 +61,11 @@ module Task =
 
     let zip (taskOp1: Task<'a>) (taskOp2: Task<'b>) : Task<'a * 'b> =
         (fun a b -> a, b) <!> taskOp1 <*> taskOp2
+
+    let zipParallel (taskOp1: Task<'a>) (taskOp2: Task<'b>) : Task<'a * 'b> =
+        (fun a b -> a, b) <!> taskOp1 <&> taskOp2
+
+[<AutoOpen>]
+module TaskCEExtensions =
+    type Microsoft.FSharp.Control.TaskBuilder with
+        member _.MergeSources(taskOp1: Task<'a>, taskOp2: Task<'b>) : Task<'a * 'b> = Task.zipParallel taskOp1 taskOp2
