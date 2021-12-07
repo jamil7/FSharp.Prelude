@@ -1,4 +1,4 @@
-namespace Prelude.Extensions
+namespace Prelude
 
 [<AutoOpen>]
 module FunctionalExtensions =

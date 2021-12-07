@@ -17,7 +17,7 @@ module ResultOperators =
     let inline (>>=) (result: Result<'a, 'e>) (f: 'a -> Result<'b, 'e>) : Result<'b, 'e> = Result.bind f result
 
 
-namespace Prelude.Extensions
+namespace Prelude
 
 open Prelude.Operators.Result
 

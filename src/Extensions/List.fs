@@ -1,6 +1,6 @@
 namespace Prelude.Extensions
 
-open Prelude.ErrorHandling
+open Prelude
 
 [<RequireQualifiedAccess>]
 module List =

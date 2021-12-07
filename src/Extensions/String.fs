@@ -1,4 +1,4 @@
-namespace Prelude.Extensions
+namespace Prelude
 
 [<RequireQualifiedAccess>]
 module String =

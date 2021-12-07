@@ -1,6 +1,6 @@
 namespace Prelude.Operators.ReaderResult
 
-open Prelude.Extensions
+open Prelude
 
 [<AutoOpen>]
 module ResultReaderOperators =
@@ -17,9 +17,8 @@ module ResultReaderOperators =
         fun r -> Result.bind (fun a -> f a r) (rr r)
 
 
-namespace Prelude.FDI
+namespace Prelude
 
-open Prelude.Extensions
 open Prelude.Operators.ReaderResult
 
 type ReaderResult<'r, 'a, 'e> = 'r -> Result<'a, 'e>

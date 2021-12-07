@@ -32,7 +32,7 @@ module AsyncOperators =
     let inline (>>=) (asyncOp: Async<'a>) (f: 'a -> Async<'b>) : Async<'b> = async.Bind(asyncOp, f)
 
 
-namespace Prelude.Extensions
+namespace Prelude
 
 open Prelude.Operators.Async
 
