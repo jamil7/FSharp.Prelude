@@ -115,6 +115,7 @@ module AsyncCEExtensions =
         member inline _.Source(asyncOp: Async<'a>) : Async<'a> = asyncOp
 
 
+// These should have a lower priority than the extensions above
 [<AutoOpen>]
 module AsyncCEExtensions2 =
 
