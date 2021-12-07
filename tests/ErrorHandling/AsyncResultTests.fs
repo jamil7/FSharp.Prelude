@@ -3,7 +3,7 @@ module FSharp.Prelude.Tests.AsyncResultTests
 open System.Threading
 open System.Threading.Tasks
 open Prelude.Extensions
-open Prelude.ErrorHandling
+open Prelude
 open Expecto
 
 [<Tests>]

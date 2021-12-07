@@ -1,7 +1,6 @@
 namespace Prelude.Operators.AsyncResultOption
 
-open Prelude.ErrorHandling
-open Prelude.Extensions
+open Prelude
 
 [<AutoOpen>]
 module AsyncResultOptionOperators =
@@ -43,9 +42,8 @@ module AsyncResultOptionOperators =
         AsyncResult.map2 Option.alternative asyncOption1 asyncOption2
 
 
-namespace Prelude.ErrorHandling
+namespace Prelude
 
-open Prelude.Extensions
 open Prelude.Operators.AsyncResultOption
 open System.Threading.Tasks
 

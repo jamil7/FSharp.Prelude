@@ -2,8 +2,7 @@ module Prelude.Tests.DependencyManagement.ReaderAsyncResult
 
 open Expecto
 open Expecto.Flip
-open Prelude.FDI
-open Prelude.Extensions
+open Prelude
 
 type Env1 = { apiKey: string; db: string }
 type Env2 = { greeting: string }

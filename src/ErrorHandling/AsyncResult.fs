@@ -1,6 +1,6 @@
 namespace Prelude.Operators.AsyncResult
 
-open Prelude.Extensions
+open Prelude
 
 [<AutoOpen>]
 module AsyncResultOperators =
@@ -34,9 +34,8 @@ module AsyncResultOperators =
             asyncResult
 
 
-namespace Prelude.ErrorHandling
+namespace Prelude
 
-open Prelude.Extensions
 open Prelude.Operators.AsyncResult
 open System.Threading.Tasks
 

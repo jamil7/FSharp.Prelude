@@ -1,6 +1,6 @@
 namespace Prelude.Operators.ReaderResult
 
-open Prelude.ErrorHandling
+open Prelude
 
 [<AutoOpen>]
 module ResultAsyncReaderOperators =
@@ -23,9 +23,8 @@ module ResultAsyncReaderOperators =
         : 'r -> Async<Result<'b, 'e>> =
         fun r -> AsyncResult.bind (fun a -> f a r) (rar r)
 
-namespace Prelude.FDI
+namespace Prelude
 
-open Prelude.ErrorHandling
 open Prelude.Operators.ReaderResult
 open System.Threading.Tasks
 

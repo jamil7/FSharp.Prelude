@@ -1,7 +1,7 @@
 module FSharp.Prelude.Tests.ResultTests
 
 open Expecto
-open Prelude.Extensions
+open Prelude
 
 let test1 =
     test "Should sequence" {

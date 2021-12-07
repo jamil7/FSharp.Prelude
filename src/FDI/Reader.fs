@@ -13,7 +13,7 @@ module ReaderOperators =
     let inline (>>=) (reader: 'r -> 'a) (f: 'a -> 'r -> 'b) : 'r -> 'b = fun r -> f (reader r) r
 
 
-namespace Prelude.FDI
+namespace Prelude
 
 open Prelude.Operators.Reader
 

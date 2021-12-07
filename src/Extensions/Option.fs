@@ -23,7 +23,7 @@ module OptionOperators =
         | left, _ -> left
 
 
-namespace Prelude.Extensions
+namespace Prelude
 
 open Prelude.Operators.Option
 
