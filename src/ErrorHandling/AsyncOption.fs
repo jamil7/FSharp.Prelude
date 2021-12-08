@@ -29,9 +29,6 @@ module AsyncOptionOperators =
             | None -> Async.singleton None)
             asyncOption
 
-    let inline (<|>) (asyncOption1: Async<'a option>) (asyncOption2: Async<'a option>) : Async<'a Option> =
-        Async.map2 Option.alternative asyncOption1 asyncOption2
-
 
 namespace Prelude
 
@@ -53,9 +50,6 @@ module AsyncOption =
     let applyParallel (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <&> asyncOption
 
     let bind (f: 'a -> AsyncOption<'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = asyncOption >>= f
-
-    let alternative (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'a>) : AsyncOption<'a> =
-        asyncOption1 <|> asyncOption2
 
     let map2 (f: 'a -> 'b -> 'c) (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) : AsyncOption<'c> =
         f <!> asyncOption1 <*> asyncOption2
