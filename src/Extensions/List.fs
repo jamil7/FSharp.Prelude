@@ -3,4 +3,4 @@ namespace Prelude
 [<RequireQualifiedAccess>]
 module List =
 
-    let cons (head: 'a) (tail: 'a list) : 'a list = cons head tail
+    let cons (head: 'a) (tail: 'a list) : 'a list = head :: tail
