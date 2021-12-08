@@ -18,7 +18,7 @@ module AsyncResultOperators =
         }
 
     /// Infix parallel apply operator.
-    let inline (<&>) (f: Async<Result<'a -> 'b, 'e>>) (asyncResult: Async<Result<'a, 'e>>) : Async<Result<'b, 'e>> =
+    let inline (<**>) (f: Async<Result<'a -> 'b, 'e>>) (asyncResult: Async<Result<'a, 'e>>) : Async<Result<'b, 'e>> =
         async {
             let! f' = f
             and! asyncResult' = asyncResult
@@ -54,7 +54,7 @@ module AsyncResult =
         f <*> asyncResult
 
     let applyParallel (f: AsyncResult<'a -> 'b, 'e>) (asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'b, 'e> =
-        f <&> asyncResult
+        f <**> asyncResult
 
     let bind (f: 'a -> AsyncResult<'b, 'e>) (asyncResult: AsyncResult<'a, 'e>) : AsyncResult<'b, 'e> = asyncResult >>= f
 
@@ -106,7 +106,7 @@ module AsyncResult =
         traverser f folder (singleton []) asyncResults
 
     let traverseParallel (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncResults
+        traverser f (fun head tail -> cons <!> f head <**> tail) (singleton []) asyncResults
 
     let sequence (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = traverse id asyncResults
 
