@@ -84,7 +84,7 @@ module TaskResult =
                 | Error _ as this -> return this
             }
 
-    let mapM (f: 'a -> TaskResult<'b, 'e>) (taskResults: 'a list) : TaskResult<'b list, 'e> =
+    let traverse (f: 'a -> TaskResult<'b, 'e>) (taskResults: 'a list) : TaskResult<'b list, 'e> =
         let folder head tail =
             f head
             >>= fun head' ->
@@ -93,12 +93,7 @@ module TaskResult =
 
         traverser f folder (singleton []) taskResults
 
-    let traverse (f: 'a -> TaskResult<'b, 'e>) (taskResults: 'a list) : TaskResult<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) taskResults
-
-    let sequence (taskResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = mapM id taskResults
-
-    let sequenceA (taskResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = traverse id taskResults
+    let sequence (taskResults: TaskResult<'a, 'e> list) : TaskResult<'a list, 'e> = traverse id taskResults
 
     let zip (taskResult1: TaskResult<'a, 'e>) (taskResult2: TaskResult<'b, 'e>) : TaskResult<'a * 'b, 'e> =
         (fun a b -> a, b) <!> taskResult1 <*> taskResult2
