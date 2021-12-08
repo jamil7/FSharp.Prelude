@@ -29,9 +29,4 @@
         <Compile Include="FDI\ReaderAsyncResult.fs" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="FSharp.Core" Version="6.0.*" />
-        <PackageReference Update="FSharp.Core" Version="6.0.*" />
-    </ItemGroup>
-
 </Project>

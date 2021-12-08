@@ -2,7 +2,6 @@ module FSharp.Prelude.Tests.AsyncResultTests
 
 open System.Threading
 open System.Threading.Tasks
-open Prelude.Extensions
 open Prelude
 open Expecto
 
@@ -86,118 +85,6 @@ let sequenceTests =
 
                 let expectedOkValue = [ 1; 2; 3 ]
                 let! _actual = AsyncResult.sequence input
-                Expect.equal orderRun expectedOkValue "Should be run in same order"
-            }
-        ]
-
-[<Tests>]
-let sequenceATests =
-    testList
-        "SequenceA tests"
-        [
-            testAsync "should return values in same order as given tasks" {
-                let expected = Ok [ 1; 2; 3 ]
-
-                let input =
-                    [
-                        (AsyncResult.singleton 1)
-                        (AsyncResult.singleton 2)
-                        (AsyncResult.singleton 3)
-                    ]
-
-                let! actual = AsyncResult.sequenceA input
-                Expect.equal actual expected "should equal"
-            }
-            testAsync "should prove example" {
-                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
-
-                let userIds = [ 1; 2; 3 ]
-                let expected = Ok userIds
-
-                let! actual =
-                    userIds
-                    |> List.map fetchUser
-                    |> AsyncResult.sequenceA
-
-                Expect.equal actual expected "should equal"
-            }
-            testAsync "should execute async task in sequence" {
-                let mutable orderRun = []
-
-                let dummyAsync: int -> AsyncResult<int, string> =
-                    fun i ->
-                        AsyncResult.ofResult (Ok i)
-                        |> AsyncResult.map
-                            (fun j ->
-                                orderRun <- List.append orderRun [ j ]
-                                j)
-
-                let input =
-                    [
-                        Async.Sleep 100
-                        |> Async.bind (fun _ -> dummyAsync 1)
-                        (dummyAsync 2)
-                        (dummyAsync 3)
-                    ]
-
-                let expectedOkValue = [ 1; 2; 3 ]
-                let! _actual = AsyncResult.sequenceA input
-                Expect.equal orderRun expectedOkValue "Should be run in same order"
-            }
-        ]
-
-[<Tests>]
-let sequenceAParallelTests =
-    testList
-        "SequenceAParallel tests"
-        [
-            testAsync "should return values in same order as given tasks" {
-                let expected = Ok [ 1; 2; 3 ]
-
-                let input =
-                    [
-                        (AsyncResult.singleton 1)
-                        (AsyncResult.singleton 2)
-                        (AsyncResult.singleton 3)
-                    ]
-
-                let! actual = AsyncResult.sequenceAParallel input
-                Expect.equal actual expected "should equal"
-            }
-            testAsync "should prove example" {
-                let fetchUser: int -> AsyncResult<int, 'err> = AsyncResult.singleton
-
-                let userIds = [ 1; 2; 3 ]
-                let expected = Ok userIds
-
-                let! actual =
-                    userIds
-                    |> List.map fetchUser
-                    |> AsyncResult.sequenceAParallel
-
-                Expect.equal actual expected "should equal"
-            }
-            testAsync "should execute async task in sequence" {
-                let mutable orderRun = []
-
-                let dummyAsync: int -> AsyncResult<int, string> =
-                    fun i ->
-                        AsyncResult.ofResult (Ok i)
-                        |> AsyncResult.map
-                            (fun j ->
-                                orderRun <- List.append orderRun [ j ]
-                                j)
-
-                let input =
-                    [
-                        Async.Sleep 100
-                        |> Async.bind (fun _ -> dummyAsync 1)
-                        (dummyAsync 2)
-                        (dummyAsync 3)
-                    ]
-
-                let expectedOkValue = [ 1; 2; 3 ]
-                let! _actual = AsyncResult.sequenceAParallel input
                 Expect.equal orderRun expectedOkValue "Should be run in same order"
             }
         ]
@@ -331,7 +218,7 @@ let mapMTests =
                 let input = [ 1; 2; 3 ]
                 let expected = Ok [ 1; 2; 3 ]
 
-                let! actual = AsyncResult.mapM AsyncResult.singleton input
+                let! actual = AsyncResult.traverse AsyncResult.singleton input
                 Expect.equal actual expected "should equal"
             }
             testAsync "should return map the AsyncResult values" {
@@ -340,7 +227,7 @@ let mapMTests =
                 let input = [ 1; 2; 3 ]
                 let expected = Ok [ 11; 12; 13 ]
 
-                let! actual = AsyncResult.mapM transformer input
+                let! actual = AsyncResult.traverse transformer input
                 Expect.equal actual expected "should equal"
             }
             testAsync "should make an early return if there is an Error" {
@@ -354,7 +241,7 @@ let mapMTests =
                     else
                         AsyncResult.singleton x
 
-                let! _ = AsyncResult.mapM transformer [ 1; 2; 3 ]
+                let! _ = AsyncResult.traverse transformer [ 1; 2; 3 ]
 
                 Expect.equal currentItem 2 "should equal"
             }
@@ -365,7 +252,7 @@ let mapMTests =
 
                 let expected = Ok userIds
 
-                let! actual = AsyncResult.mapM fetchUser userIds
+                let! actual = AsyncResult.traverse fetchUser userIds
 
                 Expect.equal actual expected "should equal"
             }
@@ -377,7 +264,7 @@ let mapMTests =
                 let input = [ 0; 14; 1; 3 ]
                 let expected = Ok input
 
-                let! actual = AsyncResult.mapM delay input
+                let! actual = AsyncResult.traverse delay input
                 Expect.equal actual expected "Should be run in same order"
             }
         ]
