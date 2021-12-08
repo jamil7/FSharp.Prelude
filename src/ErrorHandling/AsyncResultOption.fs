@@ -117,9 +117,7 @@ module AsyncResultOption =
     let traverse (f: 'a -> AsyncResultOption<'b, 'e>) (asyncResultOptions: 'a list) : AsyncResultOption<'b list, 'e> =
         let folder head tail =
             f head
-            >>= fun head' ->
-                    tail
-                    >>= fun tail' -> singleton <| cons head' tail'
+            >>= fun head' -> tail >>= fun tail' -> singleton (head' :: tail')
 
         traverser f folder (singleton []) asyncResultOptions
 
@@ -127,7 +125,7 @@ module AsyncResultOption =
         (f: 'a -> AsyncResultOption<'b, 'e>)
         (asyncResultOptions: 'a list)
         : AsyncResultOption<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <**> tail) (singleton []) asyncResultOptions
+        traverser f (fun head tail -> List.cons <!> f head <**> tail) (singleton []) asyncResultOptions
 
     let sequence (asyncResultOptions: AsyncResultOption<'a, 'e> list) : AsyncResultOption<'a list, 'e> =
         traverse id asyncResultOptions

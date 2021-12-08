@@ -99,14 +99,12 @@ module AsyncResult =
     let traverse (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
         let folder head tail =
             f head
-            >>= fun head' ->
-                    tail
-                    >>= fun tail' -> singleton <| cons head' tail'
+            >>= fun head' -> tail >>= fun tail' -> singleton (head' :: tail')
 
         traverser f folder (singleton []) asyncResults
 
     let traverseParallel (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <**> tail) (singleton []) asyncResults
+        traverser f (fun head tail -> List.cons <!> f head <**> tail) (singleton []) asyncResults
 
     let sequence (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = traverse id asyncResults
 

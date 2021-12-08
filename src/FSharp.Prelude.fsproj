@@ -13,8 +13,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Internal.fs" />
         <Compile Include="Extensions\Prelude.fs" />
+        <Compile Include="Extensions\List.fs" />
         <Compile Include="Extensions\Option.fs" />
         <Compile Include="Extensions\Async.fs" />
         <Compile Include="Extensions\Task.fs" />
@@ -25,7 +25,6 @@
         <Compile Include="ErrorHandling\AsyncResultOption.fs" />
         <Compile Include="ErrorHandling\TaskResult.fs" />
         <Compile Include="ErrorHandling\TaskOption.fs" />
-        <Compile Include="Extensions\List.fs" />
         <Compile Include="FDI\Reader.fs" />
         <Compile Include="FDI\ReaderResult.fs" />
         <Compile Include="FDI\ReaderAsyncResult.fs" />

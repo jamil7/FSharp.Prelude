@@ -87,9 +87,7 @@ module TaskResult =
     let traverse (f: 'a -> TaskResult<'b, 'e>) (taskResults: 'a list) : TaskResult<'b list, 'e> =
         let folder head tail =
             f head
-            >>= fun head' ->
-                    tail
-                    >>= fun tail' -> singleton <| cons head' tail'
+            >>= fun head' -> tail >>= fun tail' -> singleton (head' :: tail')
 
         traverser f folder (singleton []) taskResults
 
