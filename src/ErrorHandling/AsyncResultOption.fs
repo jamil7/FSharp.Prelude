@@ -35,12 +35,6 @@ module AsyncResultOptionOperators =
             | None -> AsyncResult.singleton None)
             asyncResultOption
 
-    let inline (<|>)
-        (asyncOption1: AsyncResult<'a option, 'e>)
-        (asyncOption2: AsyncResult<'a option, 'e>)
-        : AsyncResult<'a option, 'e> =
-        AsyncResult.map2 Option.alternative asyncOption1 asyncOption2
-
 
 namespace Prelude
 
