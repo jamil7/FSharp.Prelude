@@ -96,7 +96,7 @@ module AsyncResult =
                 | Error _ as this -> return this
             }
 
-    let mapM (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
+    let traverse (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
         let folder head tail =
             f head
             >>= fun head' ->
@@ -105,17 +105,12 @@ module AsyncResult =
 
         traverser f folder (singleton []) asyncResults
 
-    let traverse (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncResults
-
     let traverseParallel (f: 'a -> AsyncResult<'b, 'e>) (asyncResults: 'a list) : AsyncResult<'b list, 'e> =
         traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncResults
 
-    let sequence (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = mapM id asyncResults
+    let sequence (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = traverse id asyncResults
 
-    let sequenceA (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> = traverse id asyncResults
-
-    let sequenceAParallel (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
+    let ``parallel`` (asyncResults: AsyncResult<'a, 'e> list) : AsyncResult<'a list, 'e> =
         traverseParallel id asyncResults
 
     let zip (asyncResult1: AsyncResult<'a, 'e>) (asyncResult2: AsyncResult<'b, 'e>) : AsyncResult<'a * 'b, 'e> =

@@ -51,7 +51,7 @@ module Result =
                 | Ok _ as this -> traverser f folder this tail
                 | Error _ as this -> this
 
-    let mapM (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
+    let traverse (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
         let folder head tail =
             f head
             >>= fun head' ->
@@ -60,12 +60,7 @@ module Result =
 
         traverser f folder (singleton []) results
 
-    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = mapM id results
-
-    let traverse (f: 'a -> Result<'b, 'e>) (results: 'a list) : Result<'b list, 'e> =
-        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) results
-
-    let sequenceA (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverse id results
+    let sequence (results: Result<'a, 'e> list) : Result<'a list, 'e> = traverse id results
 
     let zip (result1: Result<'a, 'e>) (result2: Result<'b, 'e>) : Result<'a * 'b, 'e> =
         (fun a b -> a, b) <!> result1 <*> result2
