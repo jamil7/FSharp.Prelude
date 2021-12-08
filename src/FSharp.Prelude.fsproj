@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>FSharp.Prelude</PackageId>
         <Authors>Jamil Maqdis Anton</Authors>
         <PackageDescription>Extensions, error handling, and dependency injection in a functional way</PackageDescription>
