@@ -142,6 +142,8 @@ module AsyncResult =
         async.Delay(lazyUnitTask >> Async.AwaitTask)
         |> ofAsync
 
+    let ofTaskResult (taskResult: Task<Result<'a, 'e>>) : AsyncResult<'a, 'e> = async { return! taskResult }
+
 [<AutoOpen>]
 module AsyncResultCE =
     type AsyncResultBuilder() =
@@ -204,3 +206,6 @@ module AsyncResultCEExtensions =
 
         member inline _.Source(unitTask: Task) : AsyncResult<unit, exn> =
             AsyncResult.ofUnitTask (fun () -> unitTask)
+
+        member inline _.Source(taskResult: Task<Result<'a, 'e>>) : AsyncResult<'a, 'e> =
+            AsyncResult.ofTaskResult taskResult
