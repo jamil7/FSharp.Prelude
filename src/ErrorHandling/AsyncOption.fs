@@ -15,7 +15,7 @@ module AsyncOptionOperators =
             return Option.apply f' asyncOption'
         }
 
-    let inline (<&>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>) : Async<'b option> =
+    let inline (<**>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>) : Async<'b option> =
         async {
             let! f' = f
             and! asyncOption' = asyncOption
@@ -47,7 +47,7 @@ module AsyncOption =
 
     let apply (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <*> asyncOption
 
-    let applyParallel (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <&> asyncOption
+    let applyParallel (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <**> asyncOption
 
     let bind (f: 'a -> AsyncOption<'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = asyncOption >>= f
 
@@ -81,7 +81,7 @@ module AsyncOption =
         traverser f folder (singleton []) asyncOptions
 
     let traverseParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncOptions
+        traverser f (fun head tail -> cons <!> f head <**> tail) (singleton []) asyncOptions
 
     let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverse id asyncOptions
 
@@ -93,7 +93,7 @@ module AsyncOption =
 
     let zipParallel (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) : Async<('a * 'b) option> =
         (fun a b -> a, b) <!> asyncOption1
-        <&> asyncOption2
+        <**> asyncOption2
 
     let ofAsync (asyncOp: Async<'a>) : AsyncOption<'a> =
         asyncOp
