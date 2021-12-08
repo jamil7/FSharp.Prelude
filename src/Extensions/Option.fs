@@ -16,12 +16,6 @@ module OptionOperators =
     /// Infix bind operator.
     let inline (>>=) (option: 'a option) (f: 'a -> 'b option) : 'b option = Option.bind f option
 
-    /// Infix alternative operator.
-    let inline (<|>) (option1: 'a option) (option2: 'a option) : 'a option =
-        match option1, option2 with
-        | None, right -> right
-        | left, _ -> left
-
 
 namespace Prelude
 
@@ -34,8 +28,6 @@ module Option =
 
     let apply (f: ('a -> 'b) option) (option: 'a option) : 'b option = f <*> option
 
-    let alternative (option1: 'a option) (option2: 'a option) : 'a option = option1 <|> option2
-
     let andMap (option: 'a option) (f: ('a -> 'b) option) : 'b option = Option.map2 (|>) option f
 
     let rec private traverser (f: 'a -> Option<'b>) folder state xs =
@@ -47,7 +39,7 @@ module Option =
                 | Some _ as this -> traverser f folder this tail
                 | None as this -> this
 
-    let mapM (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
+    let traverse (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
         let folder head tail =
             f head
             >>= fun head' ->
@@ -56,12 +48,7 @@ module Option =
 
         traverser f folder (singleton []) options
 
-    let sequence (options: Option<'a> list) : Option<'a list> = mapM id options
-
-    let traverse (f: 'a -> Option<'b>) (options: 'a list) : Option<'b list> =
-        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) options
-
-    let sequenceA (options: Option<'a> list) : Option<'a list> = traverse id options
+    let sequence (options: Option<'a> list) : Option<'a list> = traverse id options
 
     let zip (option1: 'a option) (option2: 'b option) : ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2

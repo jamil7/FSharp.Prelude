@@ -15,7 +15,7 @@ module AsyncOptionOperators =
             return Option.apply f' asyncOption'
         }
 
-    let inline (<&>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>) : Async<'b option> =
+    let inline (<**>) (f: Async<('a -> 'b) option>) (asyncOption: Async<'a option>) : Async<'b option> =
         async {
             let! f' = f
             and! asyncOption' = asyncOption
@@ -28,9 +28,6 @@ module AsyncOptionOperators =
             | Some something -> f something
             | None -> Async.singleton None)
             asyncOption
-
-    let inline (<|>) (asyncOption1: Async<'a option>) (asyncOption2: Async<'a option>) : Async<'a Option> =
-        Async.map2 Option.alternative asyncOption1 asyncOption2
 
 
 namespace Prelude
@@ -50,12 +47,9 @@ module AsyncOption =
 
     let apply (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <*> asyncOption
 
-    let applyParallel (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <&> asyncOption
+    let applyParallel (f: AsyncOption<'a -> 'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = f <**> asyncOption
 
     let bind (f: 'a -> AsyncOption<'b>) (asyncOption: AsyncOption<'a>) : AsyncOption<'b> = asyncOption >>= f
-
-    let alternative (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'a>) : AsyncOption<'a> =
-        asyncOption1 <|> asyncOption2
 
     let map2 (f: 'a -> 'b -> 'c) (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) : AsyncOption<'c> =
         f <!> asyncOption1 <*> asyncOption2
@@ -77,7 +71,7 @@ module AsyncOption =
                 | None as this -> return this
             }
 
-    let mapM (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
+    let traverse (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
         let folder head tail =
             f head
             >>= fun head' ->
@@ -86,17 +80,12 @@ module AsyncOption =
 
         traverser f folder (singleton []) asyncOptions
 
-    let traverse (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        traverser f (fun head tail -> cons <!> f head <*> tail) (singleton []) asyncOptions
-
     let traverseParallel (f: 'a -> AsyncOption<'b>) (asyncOptions: 'a list) : AsyncOption<'b list> =
-        traverser f (fun head tail -> cons <!> f head <&> tail) (singleton []) asyncOptions
+        traverser f (fun head tail -> cons <!> f head <**> tail) (singleton []) asyncOptions
 
-    let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = mapM id asyncOptions
+    let sequence (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverse id asyncOptions
 
-    let sequenceA (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverse id asyncOptions
-
-    let sequenceAParallel (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseParallel id asyncOptions
+    let ``parallel`` (asyncOptions: AsyncOption<'a> list) : AsyncOption<'a list> = traverseParallel id asyncOptions
 
     let zip (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) : Async<('a * 'b) option> =
         (fun a b -> a, b) <!> asyncOption1
@@ -104,7 +93,7 @@ module AsyncOption =
 
     let zipParallel (asyncOption1: AsyncOption<'a>) (asyncOption2: AsyncOption<'b>) : Async<('a * 'b) option> =
         (fun a b -> a, b) <!> asyncOption1
-        <&> asyncOption2
+        <**> asyncOption2
 
     let ofAsync (asyncOp: Async<'a>) : AsyncOption<'a> =
         asyncOp

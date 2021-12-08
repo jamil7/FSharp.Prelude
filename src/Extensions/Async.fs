@@ -17,7 +17,7 @@ module AsyncOperators =
         }
 
     /// Infix parallel apply operator.
-    let inline (<&>) (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> =
+    let inline (<**>) (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> =
         async {
             let! token = Async.CancellationToken
             let! runF = Async.StartChildAsTask f
@@ -46,7 +46,7 @@ module Async =
 
     let apply (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> = f <*> asyncOp
 
-    let applyParallel (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> = f <&> asyncOp
+    let applyParallel (f: Async<'a -> 'b>) (asyncOp: Async<'a>) : Async<'b> = f <**> asyncOp
 
     let bind (f: 'a -> Async<'b>) (asyncOp: Async<'a>) : Async<'b> = asyncOp >>= f
 
@@ -58,7 +58,7 @@ module Async =
         (fun a b -> a, b) <!> asyncOp1 <*> asyncOp2
 
     let zipParallel (asyncOp1: Async<'a>) (asyncOp2: Async<'b>) : Async<'a * 'b> =
-        (fun a b -> a, b) <!> asyncOp1 <&> asyncOp2
+        (fun a b -> a, b) <!> asyncOp1 <**> asyncOp2
 
 
 [<AutoOpen>]

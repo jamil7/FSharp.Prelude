@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <PackageId>FSharp.Prelude</PackageId>
         <Authors>Jamil Maqdis Anton</Authors>
         <PackageDescription>Extensions, error handling, and dependency injection in a functional way</PackageDescription>
@@ -28,11 +28,6 @@
         <Compile Include="FDI\Reader.fs" />
         <Compile Include="FDI\ReaderResult.fs" />
         <Compile Include="FDI\ReaderAsyncResult.fs" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="FSharp.Core" Version="6.0.*" />
-        <PackageReference Update="FSharp.Core" Version="6.0.*" />
     </ItemGroup>
 
 </Project>
