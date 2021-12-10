@@ -113,6 +113,17 @@ module AsyncOption =
 
     let ofAsyncResult (asyncResult: AsyncResult<'a, 'b>) : AsyncOption<'a> = Async.bind ofResult asyncResult
 
+    let ofTaskOption (taskOption: Task<'a option>) : AsyncOption<'a> =
+        async {
+            let! op = taskOption
+            return! ofOption op
+        }
+
+    let ofTaskResult (taskResult: Task<Result<'a, 'e>>) : AsyncOption<'a> =
+        taskResult
+        |> AsyncResult.ofTaskResult
+        |> ofAsyncResult
+
 [<AutoOpen>]
 module AsyncOptionCE =
     type AsyncOptionBuilder() =
@@ -166,3 +177,5 @@ module AsyncOptionCEExtensions =
 
         member inline _.Source(unitTask: Task) : AsyncOption<unit> =
             AsyncOption.ofUnitTask (fun () -> unitTask)
+
+        member inline _.Source(taskOption: Task<'a option>) : AsyncOption<'a> = AsyncOption.ofTaskOption taskOption
