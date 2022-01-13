@@ -12,8 +12,10 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
+      - name: Restore
+        run: dotnet restore
       - name: Build
-        run: dotnet build --configuration Release
+        run: dotnet build --no-restore --configuration Release
       - name: Test
         run: dotnet test --no-restore --verbosity normal
 
@@ -22,9 +24,19 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
-      - name: Create the package
-        run: dotnet pack --configuration Release -o Release -p:PackageVersion=${GITHUB_REF/refs\/tags\/v/''} --include-source
-      - name: Publish the package to NuGet
+
+      - name: Create Prelude
+        working-directory: src/Prelude
+        run: dotnet pack --no-restore --configuration Release -p:PackageVersion=${GITHUB_REF/refs\/tags\/v/''} --inlcude-symbols --include-source
+      - name: Publish Prelude NuGet
         env:
           NUGET_AUTH_TOKEN: ${{secrets.PRELUDE_NUGET_AUTH_TOKEN}}
-        run: dotnet nuget push Release/*.nupkg --skip-duplicate --no-symbols true --source https://api.nuget.org/v3/index.json -k ${NUGET_AUTH_TOKEN}
+        run: dotnet nuget push sec/Prelude/bin/Release/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${NUGET_AUTH_TOKEN}
+
+      - name: Create Prelude.Tasks
+        working-directory: src/Prelude.Tasks
+        run: dotnet pack --no-restore --configuration Release -p:PackageVersion=${GITHUB_REF/refs\/tags\/v/''} --inlcude-symbols --include-source
+      - name: Publish Prelude.Tasks NuGet
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.PRELUDE_TASKS_NUGET_AUTH_TOKEN}}
+        run: dotnet nuget push src/Prelude.Tasks/bin/Release/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${NUGET_AUTH_TOKEN}
