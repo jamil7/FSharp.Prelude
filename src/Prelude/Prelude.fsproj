@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <PackageId>FSharp.Prelude</PackageId>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <PackageId>Prelude</PackageId>
         <Authors>Jamil Maqdis Anton</Authors>
         <PackageDescription>Extensions, error handling, and dependency injection in a functional way</PackageDescription>
         <RepositoryType>git</RepositoryType>
@@ -10,6 +10,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>F#; Async; Result; Option; AsyncResult; AsyncOption</PackageTags>
         <OtherFlags>$(OtherFlags) --warnon:1182</OtherFlags>
+        <RootNamespace>FSharp.Prelude</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,14 +18,11 @@
         <Compile Include="Extensions\List.fs" />
         <Compile Include="Extensions\Option.fs" />
         <Compile Include="Extensions\Async.fs" />
-        <Compile Include="Extensions\Task.fs" />
         <Compile Include="Extensions\Result.fs" />
         <Compile Include="Extensions\String.fs" />
         <Compile Include="ErrorHandling\AsyncResult.fs" />
         <Compile Include="ErrorHandling\AsyncOption.fs" />
         <Compile Include="ErrorHandling\AsyncResultOption.fs" />
-        <Compile Include="ErrorHandling\TaskResult.fs" />
-        <Compile Include="ErrorHandling\TaskOption.fs" />
         <Compile Include="FDI\Reader.fs" />
         <Compile Include="FDI\ReaderResult.fs" />
         <Compile Include="FDI\ReaderAsyncResult.fs" />

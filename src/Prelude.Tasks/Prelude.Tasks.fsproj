@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <PackageId>Prelude.Tasks</PackageId>
+    <Authors>Jamil Maqdis Anton</Authors>
+    <PackageDescription>A complement to Prelude that require .Net 6</PackageDescription>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/jamil7/FSharp.Prelude</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>F#; Task; TaskResult; TaskOption</PackageTags>
+    <OtherFlags>$(OtherFlags) --warnon:1182</OtherFlags>
+    <RootNamespace>FSharp.Prelude.Tasks</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Task.fs" />
+    <Compile Include="TaskResult.fs" />
+    <Compile Include="TaskOption.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Prelude\Prelude.fsproj" />
+  </ItemGroup>
+
+</Project>
