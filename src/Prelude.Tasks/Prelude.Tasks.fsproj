@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>Prelude.Tasks</PackageId>
     <Authors>Jamil Maqdis Anton</Authors>
-    <PackageDescription>A complement to Prelude that require .Net 6</PackageDescription>
+    <PackageDescription>A complement to Prelude that requires .Net 6</PackageDescription>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/jamil7/FSharp.Prelude</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
