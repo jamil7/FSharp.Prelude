@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <PackageId>Prelude.Tasks</PackageId>
+    <PackageId>FSharp.Prelude.Tasks</PackageId>
     <Authors>Jamil Maqdis Anton</Authors>
     <PackageDescription>A complement to Prelude that requires .Net 6</PackageDescription>
     <RepositoryType>git</RepositoryType>
