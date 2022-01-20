@@ -35,7 +35,7 @@ jobs:
       - name: Publish Prelude NuGet
         env:
           NUGET_AUTH_TOKEN: ${{secrets.PRELUDE_NUGET_AUTH_TOKEN}}
-        run: dotnet nuget push sec/Prelude/bin/Release/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${NUGET_AUTH_TOKEN}
+        run: dotnet nuget push src/Prelude/bin/Release/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${NUGET_AUTH_TOKEN}
 
       - name: Create Prelude.Tasks
         working-directory: src/Prelude.Tasks
