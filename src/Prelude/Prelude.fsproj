@@ -28,4 +28,8 @@
         <Compile Include="FDI\ReaderAsyncResult.fs" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.1.1" PrivateAssets="All" />
+    </ItemGroup>
+    
 </Project>
