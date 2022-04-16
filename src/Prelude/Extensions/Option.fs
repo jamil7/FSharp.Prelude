@@ -68,6 +68,16 @@ module Option =
         with
         | _ -> None
 
+    /// Splits an optioned tuple into two options.
+    let unzip = function
+        | Some (a, b) -> Some a, Some b
+        | None -> None, None
+
+    /// Splits an optioned tuple into three options.
+    let unzip3 = function
+        | Some (a, b, c) -> Some a, Some b, Some c
+        | None -> None, None, None
+
 [<AutoOpen>]
 module OptionCE =
 
