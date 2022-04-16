@@ -51,6 +51,19 @@ module Option =
     let zip (option1: 'a option) (option2: 'b option) : ('a * 'b) option =
         (fun a b -> a, b) <!> option1 <*> option2
 
+    let zip3 option1 option2 option3 =
+        (fun a b c -> a, b, c) <!> option1 <*> option2 <*> option3
+
+    /// Splits an optioned tuple into two options.
+    let unzip = function
+        | Some (a, b) -> Some a, Some b
+        | None -> None, None
+
+    /// Splits an optioned tuple into three options.
+    let unzip3 = function
+        | Some (a, b, c) -> Some a, Some b, Some c
+        | None -> None, None, None
+
     let ofResult (result: Result<'a, 'b>) : 'a option =
         match result with
         | Ok ok -> Some ok
@@ -67,16 +80,6 @@ module Option =
             Some(f a)
         with
         | _ -> None
-
-    /// Splits an optioned tuple into two options.
-    let unzip = function
-        | Some (a, b) -> Some a, Some b
-        | None -> None, None
-
-    /// Splits an optioned tuple into three options.
-    let unzip3 = function
-        | Some (a, b, c) -> Some a, Some b, Some c
-        | None -> None, None, None
 
 [<AutoOpen>]
 module OptionCE =
